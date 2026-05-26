@@ -145,7 +145,7 @@ func (m *ResourceIAMModule) processProject(ctx context.Context, projectID string
 	svc := resourceiamservice.New()
 	bindings, err := svc.GetAllResourceIAM(ctx, projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_RESOURCEIAM_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate resource IAM in project %s", projectID))
 		return
@@ -462,7 +462,7 @@ func (m *ResourceIAMModule) writeHierarchicalOutput(ctx context.Context, logger 
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_RESOURCEIAM_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -597,6 +597,6 @@ func (m *ResourceIAMModule) writeFlatOutput(ctx context.Context, logger internal
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_RESOURCEIAM_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

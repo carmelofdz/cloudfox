@@ -132,7 +132,7 @@ func (m *BeyondCorpModule) processProject(ctx context.Context, projectID string,
 	// Get app connectors
 	connectors, err := svc.ListAppConnectors(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BEYONDCORP_MODULE_NAME,
 			fmt.Sprintf("Could not list app connectors in project %s", projectID))
 	}
@@ -146,7 +146,7 @@ func (m *BeyondCorpModule) processProject(ctx context.Context, projectID string,
 	// Get app connections
 	connections, err := svc.ListAppConnections(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BEYONDCORP_MODULE_NAME,
 			fmt.Sprintf("Could not list app connections in project %s", projectID))
 	}

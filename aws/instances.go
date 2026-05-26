@@ -122,7 +122,7 @@ func (m *InstancesModule) Instances(filter string, outputDirectory string, verbo
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(instancesToSearch, region, wg, dataReceiver)
 
 	}
@@ -182,7 +182,7 @@ func (m *InstancesModule) printInstancesUserDataAttributesOnly(outputDirectory s
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	userDataFileName := filepath.Join(path, fmt.Sprintf("%s.txt", m.output.CallingModule))
 
@@ -214,7 +214,7 @@ func (m *InstancesModule) printInstancesUserDataAttributesOnly(outputDirectory s
 		err = os.WriteFile(userDataFileName, []byte(userDataOut), 0644)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 		}
 		fmt.Printf("[%s][%s] Loot written to [%s]\n", cyan(m.output.CallingModule), cyan(m.AWSProfile), userDataFileName)
 	} else {
@@ -345,7 +345,7 @@ func (m *InstancesModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	privateIPsFilename := filepath.Join(path, "instances-ec2PrivateIPs.txt")
 	publicIPsFilename := filepath.Join(path, "instances-ec2PublicIPs.txt")
@@ -396,22 +396,22 @@ func (m *InstancesModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(privateIPsFilename, []byte(privateIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	err = os.WriteFile(publicIPsFilename, []byte(publicIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	err = os.WriteFile(ssmCommandsFilename, []byte(ssmCommands), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	err = os.WriteFile(ec2InstanceConnectCommandsFilename, []byte(ec2InstanceConnectCommands), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	fmt.Printf("[%s][%s] Loot written to [%s]\n", cyan(m.output.CallingModule), cyan(m.AWSProfile), privateIPsFilename)
@@ -448,17 +448,17 @@ func (m *InstancesModule) executeChecks(instancesToSearch []string, r string, wg
 	res, err := servicemap.IsServiceInRegion("ec2", r)
 	if err != nil {
 		m.modLog.Errorf("Error checking if EC2 is available in region %s: %v", r, err)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	m.modLog.Debugf("ServiceMap check for EC2 in region %s: result=%v, error=%v", r, res, err)
 	if res {
-		m.CommandCounter.Total++
-		m.CommandCounter.Pending--
-		m.CommandCounter.Executing++
+		m.CommandCounter.IncrTotal()
+		m.CommandCounter.DecrPending()
+		m.CommandCounter.IncrExecuting()
 		m.getDescribeInstances(instancesToSearch, r, dataReceiver)
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	} else {
 		m.modLog.Infof("Skipping region %s: EC2 not available or check failed", r)
 	}
@@ -469,7 +469,7 @@ func (m *InstancesModule) getInstanceUserDataAttribute(instanceID *string, regio
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return nil, err
 	} else {
 		if UserData == "" {
@@ -489,7 +489,7 @@ func (m *InstancesModule) getDescribeInstances(instancesToSearch []string, regio
 	Instances, err := sdk.CachedEC2DescribeInstances(m.EC2Client, aws.ToString(m.Caller.Account), region)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -588,7 +588,7 @@ func (m *InstancesModule) getRolesFromInstanceProfiles() {
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		for _, instanceProfile := range ListInstanceProfiles.InstanceProfiles {

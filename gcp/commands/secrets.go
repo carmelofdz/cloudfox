@@ -145,7 +145,7 @@ func (m *SecretsModule) processProject(ctx context.Context, projectID string, lo
 	ss := SecretsService.New(m.client)
 	secrets, err := ss.Secrets(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_SECRETS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate secrets in project %s", projectID))
 		return
@@ -326,7 +326,7 @@ func (m *SecretsModule) writeHierarchicalOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_SECRETS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -378,7 +378,7 @@ func (m *SecretsModule) writeFlatOutput(ctx context.Context, logger internal.Log
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_SECRETS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

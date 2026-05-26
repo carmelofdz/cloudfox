@@ -105,7 +105,7 @@ func (m *LambdasModule) PrintLambdas(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -241,7 +241,7 @@ func (m *LambdasModule) executeChecks(r string, wg *sync.WaitGroup, semaphore ch
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getLambdasPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -265,7 +265,7 @@ func (m *LambdasModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	pullFile := filepath.Join(path, "lambda-get-function-commands.txt")
 
@@ -289,7 +289,7 @@ func (m *LambdasModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(pullFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -306,8 +306,8 @@ func (m *LambdasModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *LambdasModule) getLambdasPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Lambda) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -319,7 +319,7 @@ func (m *LambdasModule) getLambdasPerRegion(r string, wg *sync.WaitGroup, semaph
 	functions, err := m.listFunctions(r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, function := range functions {
@@ -360,7 +360,7 @@ func (m *LambdasModule) listFunctions(r string) ([]types.FunctionConfiguration, 
 		)
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return functions, err
 		}
 		functions = append(functions, ListFunctions.Functions...)
@@ -389,7 +389,7 @@ func (m *LambdasModule) getResourcePolicy(r string, functionName string) (policy
 	)
 	if err != nil {
 		sharedLogger.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return projectPolicy, err
 	}
 

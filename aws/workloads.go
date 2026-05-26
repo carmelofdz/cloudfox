@@ -109,7 +109,7 @@ func (m *WorkloadsModule) PrintWorkloads(outputDirectory string, verbosity int) 
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -281,14 +281,14 @@ func (m *WorkloadsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 
 	res, _ := servicemap.IsServiceInRegion("ec2", r)
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEC2WorkloadsPerRegion(r, wg, semaphore, dataReceiver)
 	}
 
 	res, _ = servicemap.IsServiceInRegion("ecs", r)
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getECSWorkloadsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -298,13 +298,13 @@ func (m *WorkloadsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLambdaWorkloadsPerRegion(r, wg, semaphore, dataReceiver)
 	}
 
 	// AppRunner is not supported in the aws service region catalog so we have to run it in all regions
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	go m.getAppRunnerWorkloadsPerRegion(r, wg, semaphore, dataReceiver)
 
@@ -312,8 +312,8 @@ func (m *WorkloadsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 
 func (m *WorkloadsModule) getEC2WorkloadsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Workload) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -369,8 +369,8 @@ func (m *WorkloadsModule) getEC2WorkloadsPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *WorkloadsModule) getECSWorkloadsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Workload) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -395,7 +395,7 @@ func (m *WorkloadsModule) getECSWorkloadsPerRegion(r string, wg *sync.WaitGroup,
 		Tasks, err := sdk.CachedECSDescribeTasks(m.ECSClient, aws.ToString(m.Caller.Account), r, cluster, taskARNs)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 
@@ -424,8 +424,8 @@ func (m *WorkloadsModule) getECSWorkloadsPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *WorkloadsModule) getLambdaWorkloadsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Workload) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -457,8 +457,8 @@ func (m *WorkloadsModule) getLambdaWorkloadsPerRegion(r string, wg *sync.WaitGro
 
 func (m *WorkloadsModule) getAppRunnerWorkloadsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Workload) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -543,7 +543,7 @@ func (m *WorkloadsModule) getRolesFromInstanceProfiles() {
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		for _, instanceProfile := range ListInstanceProfiles.InstanceProfiles {

@@ -104,7 +104,7 @@ func (m *DataprocModule) processProject(ctx context.Context, projectID string, l
 
 	clusters, err := svc.ListClusters(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_DATAPROC_MODULE_NAME,
 			fmt.Sprintf("Could not list Dataproc clusters in project %s", projectID))
 		return

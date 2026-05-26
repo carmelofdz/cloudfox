@@ -170,7 +170,7 @@ func (m *KMSModule) processProject(ctx context.Context, projectID string, logger
 	// Get key rings
 	keyRings, err := ks.KeyRings(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_KMS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate KMS key rings in project %s", projectID))
 		return
@@ -179,7 +179,7 @@ func (m *KMSModule) processProject(ctx context.Context, projectID string, logger
 	// Get crypto keys
 	keys, err := ks.CryptoKeys(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_KMS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate KMS keys in project %s", projectID))
 	}
@@ -449,7 +449,7 @@ func (m *KMSModule) writeHierarchicalOutput(ctx context.Context, logger internal
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_KMS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -512,7 +512,7 @@ func (m *KMSModule) writeFlatOutput(ctx context.Context, logger internal.Logger)
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_KMS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

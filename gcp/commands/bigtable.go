@@ -118,7 +118,7 @@ func (m *BigtableModule) processProject(ctx context.Context, projectID string, l
 	svc := bigtableservice.New()
 	result, err := svc.ListInstances(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BIGTABLE_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Bigtable instances in project %s", projectID))
 		return

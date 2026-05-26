@@ -118,7 +118,7 @@ func (m *SourceReposModule) processProject(ctx context.Context, projectID string
 	svc := sourcereposservice.New()
 	repos, err := svc.ListRepos(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_SOURCEREPOS_MODULE_NAME,
 			fmt.Sprintf("Could not list repos in project %s", projectID))
 		return
@@ -263,7 +263,7 @@ func (m *SourceReposModule) writeHierarchicalOutput(ctx context.Context, logger 
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_SOURCEREPOS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -325,7 +325,7 @@ func (m *SourceReposModule) writeFlatOutput(ctx context.Context, logger internal
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_SOURCEREPOS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

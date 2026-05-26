@@ -86,7 +86,7 @@ func (m *FilestoreModule) processProject(ctx context.Context, projectID string, 
 	svc := filestoreservice.New()
 	instances, err := svc.ListInstances(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_FILESTORE_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Filestore instances in project %s", projectID))
 		return

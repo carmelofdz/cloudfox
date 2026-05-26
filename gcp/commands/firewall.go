@@ -187,7 +187,7 @@ func (m *FirewallModule) processProject(ctx context.Context, projectID string, l
 	var err error
 	networks, err = ns.Networks(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_FIREWALL_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate networks in project %s", projectID))
 	}
@@ -195,7 +195,7 @@ func (m *FirewallModule) processProject(ctx context.Context, projectID string, l
 	// Get subnets
 	subnets, err = ns.Subnets(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_FIREWALL_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate subnets in project %s", projectID))
 	}
@@ -203,7 +203,7 @@ func (m *FirewallModule) processProject(ctx context.Context, projectID string, l
 	// Get firewall rules
 	rules, err = ns.FirewallRulesEnhanced(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_FIREWALL_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate firewall rules in project %s", projectID))
 	}
@@ -530,7 +530,7 @@ func (m *FirewallModule) writeHierarchicalOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_FIREWALL_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -576,7 +576,7 @@ func (m *FirewallModule) writeFlatOutput(ctx context.Context, logger internal.Lo
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_FIREWALL_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

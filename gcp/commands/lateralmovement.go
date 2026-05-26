@@ -399,7 +399,7 @@ func (m *LateralMovementModule) findImpersonationChains(ctx context.Context, pro
 	// Get all service accounts (without keys - not needed for impersonation analysis)
 	serviceAccounts, err := iamService.ServiceAccountsBasic(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_LATERALMOVEMENT_MODULE_NAME,
 			fmt.Sprintf("Could not get service accounts in project %s", projectID))
 		return
@@ -1009,6 +1009,6 @@ func (m *LateralMovementModule) writeFlatOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_LATERALMOVEMENT_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

@@ -167,7 +167,7 @@ func (m *EndpointsModule) processProject(ctx context.Context, projectID string, 
 
 	computeService, err := compute.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, "endpoints",
 			fmt.Sprintf("Could not create Compute service in project %s", projectID))
 	} else {
@@ -1532,6 +1532,6 @@ func (m *EndpointsModule) writeFlatOutput(ctx context.Context, logger internal.L
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), "endpoints")
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

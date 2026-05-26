@@ -175,7 +175,7 @@ func (m *LoggingModule) processProject(ctx context.Context, projectID string, lo
 	// Get sinks
 	sinks, err := ls.Sinks(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOGGING_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate logging sinks in project %s", projectID))
 	} else {
@@ -185,7 +185,7 @@ func (m *LoggingModule) processProject(ctx context.Context, projectID string, lo
 	// Get metrics
 	metrics, err := ls.Metrics(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOGGING_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate log metrics in project %s", projectID))
 	} else {
@@ -545,7 +545,7 @@ func (m *LoggingModule) writeHierarchicalOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_LOGGING_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -616,7 +616,7 @@ func (m *LoggingModule) writeFlatOutput(ctx context.Context, logger internal.Log
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_LOGGING_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

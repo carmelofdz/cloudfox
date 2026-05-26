@@ -142,7 +142,7 @@ func (m *CrossProjectModule) Execute(ctx context.Context, logger internal.Logger
 	// Analyze cross-project bindings
 	bindings, err := svc.AnalyzeCrossProjectAccess(m.ProjectIDs, m.OrgCache)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CROSSPROJECT_MODULE_NAME,
 			"Could not analyze cross-project access")
 	} else {
@@ -152,7 +152,7 @@ func (m *CrossProjectModule) Execute(ctx context.Context, logger internal.Logger
 	// Get cross-project service accounts
 	sas, err := svc.GetCrossProjectServiceAccounts(m.ProjectIDs)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CROSSPROJECT_MODULE_NAME,
 			"Could not get cross-project service accounts")
 	} else {
@@ -162,7 +162,7 @@ func (m *CrossProjectModule) Execute(ctx context.Context, logger internal.Logger
 	// Find lateral movement paths
 	paths, err := svc.FindLateralMovementPaths(m.ProjectIDs, m.OrgCache)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CROSSPROJECT_MODULE_NAME,
 			"Could not find lateral movement paths")
 	} else {
@@ -172,7 +172,7 @@ func (m *CrossProjectModule) Execute(ctx context.Context, logger internal.Logger
 	// Find cross-project logging sinks
 	sinks, err := svc.FindCrossProjectLoggingSinks(m.ProjectIDs)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CROSSPROJECT_MODULE_NAME,
 			"Could not find cross-project logging sinks")
 	} else {
@@ -182,7 +182,7 @@ func (m *CrossProjectModule) Execute(ctx context.Context, logger internal.Logger
 	// Find cross-project Pub/Sub exports
 	pubsubExports, err := svc.FindCrossProjectPubSubExports(m.ProjectIDs)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CROSSPROJECT_MODULE_NAME,
 			"Could not find cross-project Pub/Sub exports")
 	} else {
@@ -606,7 +606,7 @@ func (m *CrossProjectModule) writeHierarchicalOutput(ctx context.Context, logger
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_CROSSPROJECT_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -656,7 +656,7 @@ func (m *CrossProjectModule) writeFlatOutput(ctx context.Context, logger interna
 		)
 		if err != nil {
 			logger.ErrorM(fmt.Sprintf("Error writing output for project %s: %v", targetProject, err), globals.GCP_CROSSPROJECT_MODULE_NAME)
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 		}
 	}
 }

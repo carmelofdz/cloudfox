@@ -1852,7 +1852,7 @@ func (m *ComplianceDashboardModule) writeHierarchicalOutput(ctx context.Context,
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), GCP_COMPLIANCEDASHBOARD_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1979,7 +1979,7 @@ func (m *ComplianceDashboardModule) writeFlatOutput(ctx context.Context, logger 
 		output,
 	)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COMPLIANCEDASHBOARD_MODULE_NAME,
 			"Could not write output")
 	}

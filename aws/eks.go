@@ -102,7 +102,7 @@ func (m *EKSModule) EKS(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -255,7 +255,7 @@ func (m *EKSModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan s
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getEKSRecordsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -279,7 +279,7 @@ func (m *EKSModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	pullFile := filepath.Join(path, "eks-kubeconfig-commands.txt")
 
@@ -303,7 +303,7 @@ func (m *EKSModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(pullFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -322,8 +322,8 @@ func (m *EKSModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *EKSModule) getEKSRecordsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Cluster) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -336,7 +336,7 @@ func (m *EKSModule) getEKSRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 	clusters, err := sdk.CachedEKSListClusters(m.EKSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -347,7 +347,7 @@ func (m *EKSModule) getEKSRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 		clusterDetails, err := sdk.CachedEKSDescribeCluster(m.EKSClient, aws.ToString(m.Caller.Account), clusterName, r)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 		}
 
 		//nodeGroups = append(nodeGroups, DescribeCluster.Cluster.)
@@ -373,7 +373,7 @@ func (m *EKSModule) getEKSRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 				nodeGroupDetails, err := sdk.CachedEKSDescribeNodeGroup(m.EKSClient, aws.ToString(m.Caller.Account), clusterName, nodeGroup, r)
 				if err != nil {
 					m.modLog.Error(err.Error())
-					m.CommandCounter.Error++
+					m.CommandCounter.IncrError()
 				}
 
 				role = aws.ToString(nodeGroupDetails.NodeRole)

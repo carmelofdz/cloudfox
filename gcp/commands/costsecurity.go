@@ -259,7 +259,7 @@ func (m *CostSecurityModule) analyzeComputeInstances(ctx context.Context, projec
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COSTSECURITY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate compute instances in project %s", projectID))
 	}
@@ -525,7 +525,7 @@ func (m *CostSecurityModule) findOrphanedDisks(ctx context.Context, projectID st
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COSTSECURITY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate disks in project %s", projectID))
 	}
@@ -583,7 +583,7 @@ func (m *CostSecurityModule) findOrphanedIPs(ctx context.Context, projectID stri
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COSTSECURITY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate addresses in project %s", projectID))
 	}
@@ -592,7 +592,7 @@ func (m *CostSecurityModule) findOrphanedIPs(ctx context.Context, projectID stri
 func (m *CostSecurityModule) analyzeSQLInstances(ctx context.Context, projectID string, sqlService *sqladmin.Service, logger internal.Logger) {
 	instances, err := sqlService.Instances.List(projectID).Do()
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COSTSECURITY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate SQL instances in project %s", projectID))
 		return
@@ -642,7 +642,7 @@ func (m *CostSecurityModule) analyzeSQLInstances(ctx context.Context, projectID 
 func (m *CostSecurityModule) analyzeStorageBuckets(ctx context.Context, projectID string, storageService *storage.Service, logger internal.Logger) {
 	buckets, err := storageService.Buckets.List(projectID).Do()
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_COSTSECURITY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate storage buckets in project %s", projectID))
 		return
@@ -1011,7 +1011,7 @@ func (m *CostSecurityModule) writeHierarchicalOutput(ctx context.Context, logger
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), GCP_COSTSECURITY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1166,6 +1166,6 @@ func (m *CostSecurityModule) writeFlatOutput(ctx context.Context, logger interna
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_COSTSECURITY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

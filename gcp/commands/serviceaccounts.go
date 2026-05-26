@@ -164,7 +164,7 @@ func (m *ServiceAccountsModule) processProject(ctx context.Context, projectID st
 		// Fallback to basic enumeration if impersonation analysis fails
 		serviceAccounts, err = iamService.ServiceAccounts(projectID)
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, globals.GCP_SERVICEACCOUNTS_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate service accounts in project %s", projectID))
 			return
@@ -677,7 +677,7 @@ func (m *ServiceAccountsModule) writeHierarchicalOutput(ctx context.Context, log
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_SERVICEACCOUNTS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -723,7 +723,7 @@ func (m *ServiceAccountsModule) writeFlatOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_SERVICEACCOUNTS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

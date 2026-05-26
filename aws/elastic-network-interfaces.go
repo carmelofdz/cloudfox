@@ -73,7 +73,7 @@ func (m *ElasticNetworkInterfacesModule) ElasticNetworkInterfaces(outputDirector
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, dataReceiver)
 
 	}
@@ -199,7 +199,7 @@ func (m *ElasticNetworkInterfacesModule) writeLoot(outputDirectory string) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	privateIPsFilename := filepath.Join(path, "elastic-network-interfaces-PrivateIPs.txt")
 	publicIPsFilename := filepath.Join(path, "elastic-network-interfaces-PublicIPs.txt")
@@ -219,12 +219,12 @@ func (m *ElasticNetworkInterfacesModule) writeLoot(outputDirectory string) {
 	err = os.WriteFile(privateIPsFilename, []byte(privateIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	err = os.WriteFile(publicIPsFilename, []byte(publicIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	fmt.Printf("[%s][%s] Loot written to [%s]\n", cyan(m.output.CallingModule), cyan(m.AWSProfile), privateIPsFilename)
@@ -246,12 +246,12 @@ func (m *ElasticNetworkInterfacesModule) executeChecks(r string, wg *sync.WaitGr
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
-		m.CommandCounter.Pending--
-		m.CommandCounter.Executing++
+		m.CommandCounter.IncrTotal()
+		m.CommandCounter.DecrPending()
+		m.CommandCounter.IncrExecuting()
 		m.getDescribeNetworkInterfaces(r, dataReceiver)
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}
 }
 
@@ -272,7 +272,7 @@ func (m *ElasticNetworkInterfacesModule) getDescribeNetworkInterfaces(region str
 	// 	)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 

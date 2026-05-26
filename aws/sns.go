@@ -96,7 +96,7 @@ func (m *SNSModule) PrintSNS(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -205,7 +205,7 @@ func (m *SNSModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan s
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getSNSTopicsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -288,8 +288,8 @@ func (m *SNSModule) writeLoot(outputDirectory string, verbosity int, profile str
 
 func (m *SNSModule) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan SNSTopic) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -308,7 +308,7 @@ func (m *SNSModule) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, semaphor
 		topic, err := m.getTopicWithAttributes(aws.ToString(t.TopicArn), r)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		parsedArn, err := arn.Parse(aws.ToString(t.TopicArn))
@@ -427,7 +427,7 @@ func (m *SNSModule) storeAccessPolicy(topic *SNSTopic) {
 
 	if err := m.storeFile(f, topic.PolicyJSON); err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

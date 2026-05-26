@@ -99,7 +99,7 @@ func (m *SQSModule) PrintSQS(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -207,7 +207,7 @@ func (m *SQSModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan s
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getSQSRecordsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -287,8 +287,8 @@ func (m *SQSModule) writeLoot(outputDirectory string, verbosity int, profile str
 
 func (m *SQSModule) getSQSRecordsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Queue) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -301,7 +301,7 @@ func (m *SQSModule) getSQSRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -309,7 +309,7 @@ func (m *SQSModule) getSQSRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 		queue, err := m.getQueueWithAttributes(url, r)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -437,7 +437,7 @@ func (m *SQSModule) storeAccessPolicy(queue *Queue) {
 
 	if err := m.storeFile(f, queue.PolicyJSON); err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

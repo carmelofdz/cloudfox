@@ -260,7 +260,7 @@ func (m *DatabasesModule) executeCheck(check check) {
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		check.wg.Add(1)
 		go check.executor(check.region, check.wg, check.semaphore, check.dataReceiver)
 	}
@@ -324,7 +324,7 @@ func (m *DatabasesModule) writeLoot(outputDirectory string, verbosity int) strin
 	// err = os.WriteFile(f, []byte(out), 0644)
 	// if err != nil {
 	// 	m.modLog.Error(err.Error())
-	// 	m.CommandCounter.Error++
+	// 	m.CommandCounter.IncrError()
 	// 	panic(err.Error())
 	// }
 
@@ -343,8 +343,8 @@ func (m *DatabasesModule) writeLoot(outputDirectory string, verbosity int) strin
 
 func (m *DatabasesModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Database) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -352,13 +352,13 @@ func (m *DatabasesModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, 
 	defer func() {
 		<-semaphore
 	}()
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	DBClusters, err := sdk.CachedRDSDescribeDBClusters(m.RDSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -411,8 +411,8 @@ func (m *DatabasesModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, 
 
 func (m *DatabasesModule) getRdsInstancesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Database) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -420,14 +420,14 @@ func (m *DatabasesModule) getRdsInstancesPerRegion(r string, wg *sync.WaitGroup,
 	defer func() {
 		<-semaphore
 	}()
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	DBInstances, err := sdk.CachedRDSDescribeDBInstances(m.RDSClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -480,8 +480,8 @@ func (m *DatabasesModule) getRdsInstancesPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *DatabasesModule) getRedshiftDatabasesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Database) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -489,9 +489,9 @@ func (m *DatabasesModule) getRedshiftDatabasesPerRegion(r string, wg *sync.WaitG
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "Redshift"
 	protocol := "https"
 
@@ -502,7 +502,7 @@ func (m *DatabasesModule) getRedshiftDatabasesPerRegion(r string, wg *sync.WaitG
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -532,8 +532,8 @@ func (m *DatabasesModule) getRedshiftDatabasesPerRegion(r string, wg *sync.WaitG
 
 func (m *DatabasesModule) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Database) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -541,15 +541,15 @@ func (m *DatabasesModule) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGrou
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "DynamoDB"
 
 	Tables, err := sdk.CachedDynamoDBListTables(m.DynamoDBClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -558,7 +558,7 @@ func (m *DatabasesModule) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGrou
 		TableOutput, err := sdk.CachedDynamoDBDescribeTable(m.DynamoDBClient, aws.ToString(m.Caller.Account), r, table)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		size := aws.ToInt64(TableOutput.TableSizeBytes)

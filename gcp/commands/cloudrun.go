@@ -176,7 +176,7 @@ func (m *CloudRunModule) processProject(ctx context.Context, projectID string, l
 	// Get services
 	services, err := cs.Services(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CLOUDRUN_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Cloud Run services in project %s", projectID))
 	} else {
@@ -191,7 +191,7 @@ func (m *CloudRunModule) processProject(ctx context.Context, projectID string, l
 	// Get jobs
 	jobs, err := cs.Jobs(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CLOUDRUN_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Cloud Run jobs in project %s", projectID))
 	} else {
@@ -391,7 +391,7 @@ func (m *CloudRunModule) writeHierarchicalOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_CLOUDRUN_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -436,7 +436,7 @@ func (m *CloudRunModule) writeFlatOutput(ctx context.Context, logger internal.Lo
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_CLOUDRUN_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

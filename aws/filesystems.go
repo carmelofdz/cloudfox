@@ -245,7 +245,7 @@ func (m *FilesystemsModule) writeLoot(outputDirectory string, verbosity int) {
 	if err != nil {
 		sharedLogger.Error(err.Error())
 
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	f := filepath.Join(path, "filesystems-mount-commands.txt")
 
@@ -283,7 +283,7 @@ func (m *FilesystemsModule) writeLoot(outputDirectory string, verbosity int) {
 	if err != nil {
 		sharedLogger.Error(err.Error())
 
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	fmt.Printf("[%s][%s] Loot written to [%s]\n", cyan(m.output.CallingModule), cyan(m.AWSProfile), f)
 	if verbosity > 2 {
@@ -297,20 +297,20 @@ func (m *FilesystemsModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *FilesystemsModule) getEFSSharesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan FilesystemObject) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var policy string
 
 	DescribeFileSystems, err := sdk.CachedDescribeFileSystems(m.EFSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		sharedLogger.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -336,7 +336,7 @@ func (m *FilesystemsModule) getEFSSharesPerRegion(r string, wg *sync.WaitGroup, 
 		DescribeMountTargets, err := sdk.CachedDescribeMountTargets(m.EFSClient, aws.ToString(m.Caller.Account), r, id)
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -349,7 +349,7 @@ func (m *FilesystemsModule) getEFSSharesPerRegion(r string, wg *sync.WaitGroup, 
 			if err != nil {
 				sharedLogger.Error(err.Error())
 
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				dataReceiver <- FilesystemObject{
 					AWSService:  awsService,
 					Region:      r,
@@ -381,14 +381,14 @@ func (m *FilesystemsModule) getEFSSharesPerRegion(r string, wg *sync.WaitGroup, 
 
 func (m *FilesystemsModule) getFSxSharesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan FilesystemObject) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var PaginationMarker *string
 	var PaginationMarker2 *string
@@ -410,7 +410,7 @@ func (m *FilesystemsModule) getFSxSharesPerRegion(r string, wg *sync.WaitGroup, 
 		if err != nil {
 			sharedLogger.Error(err.Error())
 
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 

@@ -167,7 +167,7 @@ func (m *PrivateServiceConnectModule) processProject(ctx context.Context, projec
 	// Get PSC endpoints
 	pscEndpoints, err := svc.GetPrivateServiceConnectEndpoints(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, "private-service-connect",
 			fmt.Sprintf("Could not get PSC endpoints in project %s", projectID))
 	}
@@ -175,7 +175,7 @@ func (m *PrivateServiceConnectModule) processProject(ctx context.Context, projec
 	// Get private connections
 	privateConns, err := svc.GetPrivateConnections(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, "private-service-connect",
 			fmt.Sprintf("Could not get private connections in project %s", projectID))
 	}
@@ -183,7 +183,7 @@ func (m *PrivateServiceConnectModule) processProject(ctx context.Context, projec
 	// Get service attachments
 	attachments, err := svc.GetServiceAttachments(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, "private-service-connect",
 			fmt.Sprintf("Could not get service attachments in project %s", projectID))
 	}
@@ -553,6 +553,6 @@ func (m *PrivateServiceConnectModule) writeFlatOutput(ctx context.Context, logge
 		"project", m.ProjectIDs, scopeNames, m.Account, output)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), "private-service-connect")
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

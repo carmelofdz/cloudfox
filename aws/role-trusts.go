@@ -590,14 +590,14 @@ func (m *RoleTrustsModule) getAllRoleTrusts() {
 	ListRoles, err := sdk.CachedIamListRoles(m.IAMClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, role := range ListRoles {
 		trustsdoc, err := policy.ParseRoleTrustPolicyDocument(role)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 

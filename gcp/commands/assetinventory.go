@@ -257,7 +257,7 @@ func (m *AssetInventoryModule) processProject(ctx context.Context, projectID str
 	svc := assetservice.New()
 	assets, err := svc.ListAssets(projectID, assetTypes)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_ASSET_INVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate assets in project %s", projectID))
 		return
@@ -283,7 +283,7 @@ func (m *AssetInventoryModule) processProjectIAM(ctx context.Context, projectID 
 	svc := assetservice.New()
 	assets, err := svc.ListAssetsWithIAM(projectID, assetTypes)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_ASSET_INVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate assets with IAM in project %s", projectID))
 		return
@@ -309,7 +309,7 @@ func (m *AssetInventoryModule) processProjectCounts(ctx context.Context, project
 	svc := assetservice.New()
 	counts, err := svc.GetAssetTypeCounts(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_ASSET_INVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not count assets in project %s", projectID))
 		return
@@ -374,7 +374,7 @@ func (m *AssetInventoryModule) processProjectWithDependencies(ctx context.Contex
 			break
 		}
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			parsedErr := gcpinternal.ParseGCPError(err, "cloudasset.googleapis.com")
 			gcpinternal.HandleGCPError(parsedErr, logger, globals.GCP_ASSET_INVENTORY_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate assets in project %s", projectID))

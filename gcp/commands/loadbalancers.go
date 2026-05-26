@@ -133,7 +133,7 @@ func (m *LoadBalancersModule) processProject(ctx context.Context, projectID stri
 	// Get load balancers
 	lbs, err := svc.ListLoadBalancers(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOADBALANCERS_MODULE_NAME,
 			fmt.Sprintf("Could not list load balancers in project %s", projectID))
 	} else {
@@ -148,7 +148,7 @@ func (m *LoadBalancersModule) processProject(ctx context.Context, projectID stri
 	// Get SSL policies
 	sslPolicies, err := svc.ListSSLPolicies(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOADBALANCERS_MODULE_NAME,
 			fmt.Sprintf("Could not list SSL policies in project %s", projectID))
 	} else {
@@ -160,7 +160,7 @@ func (m *LoadBalancersModule) processProject(ctx context.Context, projectID stri
 	// Get backend services
 	backends, err := svc.ListBackendServices(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOADBALANCERS_MODULE_NAME,
 			fmt.Sprintf("Could not list backend services in project %s", projectID))
 	} else {

@@ -191,19 +191,19 @@ func (m *ApiGwModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayAPIsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayVIPsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayv2APIsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayv2VIPsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -244,7 +244,7 @@ func (m *ApiGwModule) writeLoot(outputDirectory string, verbosity int) string {
 	// err = os.WriteFile(f, []byte(out), 0644)
 	// if err != nil {
 	// 	m.modLog.Error(err.Error())
-	// 	m.CommandCounter.Error++
+	// 	m.CommandCounter.IncrError()
 	// 	panic(err.Error())
 	// }
 
@@ -263,8 +263,8 @@ func (m *ApiGwModule) writeLoot(outputDirectory string, verbosity int) string {
 
 func (m *ApiGwModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan ApiGateway) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -272,21 +272,21 @@ func (m *ApiGwModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGroup, s
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedApiGatewayGetRestAPIs(m.APIGatewayClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
 	for _, api := range Items {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		for _, endpoint := range m.getEndpointsPerAPIGateway(r, api) {
 			dataReceiver <- endpoint
 		}
@@ -295,8 +295,8 @@ func (m *ApiGwModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGroup, s
 
 func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan ApiGateway) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -304,16 +304,16 @@ func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, s
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedApiGatewayGetRestAPIs(m.APIGatewayClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -322,7 +322,7 @@ func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, s
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -334,7 +334,7 @@ func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, s
 		if err != nil {
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -347,7 +347,7 @@ func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, s
 
 			for _, api := range Items {
 				if api.Id != nil && aws.ToString(api.Id) == aws.ToString(mapping.RestApiId) {
-					m.CommandCounter.Total++
+					m.CommandCounter.IncrTotal()
 
 					endpoints := m.getEndpointsPerAPIGateway(r, api)
 					for _, endpoint := range endpoints {
@@ -376,8 +376,8 @@ func (m *ApiGwModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, s
 
 func (m *ApiGwModule) getEndpointsPerAPIGateway(r string, api apigatewayTypes.RestApi) []ApiGateway {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	var gateways []ApiGateway
 
@@ -402,7 +402,7 @@ func (m *ApiGwModule) getEndpointsPerAPIGateway(r string, api apigatewayTypes.Re
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return gateways
 	}
 
@@ -411,7 +411,7 @@ func (m *ApiGwModule) getEndpointsPerAPIGateway(r string, api apigatewayTypes.Re
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range GetStages.Item {
@@ -427,7 +427,7 @@ func (m *ApiGwModule) getEndpointsPerAPIGateway(r string, api apigatewayTypes.Re
 						if err != nil {
 							m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 							m.modLog.Error(err.Error())
-							m.CommandCounter.Error++
+							m.CommandCounter.IncrError()
 						}
 					}
 
@@ -454,8 +454,8 @@ func (m *ApiGwModule) getEndpointsPerAPIGateway(r string, api apigatewayTypes.Re
 
 func (m *ApiGwModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan ApiGateway) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -463,20 +463,20 @@ func (m *ApiGwModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGroup,
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedAPIGatewayv2GetAPIs(m.APIGatewayv2Client, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, api := range Items {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		for _, endpoint := range m.getEndpointsPerAPIGatewayv2(r, api) {
 			dataReceiver <- endpoint
 		}
@@ -486,8 +486,8 @@ func (m *ApiGwModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan ApiGateway) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -495,16 +495,16 @@ func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup,
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedAPIGatewayv2GetAPIs(m.APIGatewayv2Client, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -513,7 +513,7 @@ func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup,
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, item := range GetDomainNames {
@@ -524,7 +524,7 @@ func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup,
 		if err != nil {
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -537,7 +537,7 @@ func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup,
 
 			for _, api := range Items {
 				if api.ApiId != nil && aws.ToString(api.ApiId) == aws.ToString(mapping.ApiId) {
-					m.CommandCounter.Total++
+					m.CommandCounter.IncrTotal()
 					endpoints := m.getEndpointsPerAPIGatewayv2(r, api)
 					for _, endpoint := range endpoints {
 						var old string
@@ -568,8 +568,8 @@ func (m *ApiGwModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *ApiGwModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2Types.Api) []ApiGateway {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 
 	var gateways []ApiGateway
@@ -588,7 +588,7 @@ func (m *ApiGwModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2Type
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range GetStages {
@@ -603,7 +603,7 @@ func (m *ApiGwModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2Type
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range stages {
@@ -643,7 +643,7 @@ func (m *ApiGwModule) ApiGatewayApiKeyRequired(r string, ApiId *string, Resource
 	if err != nil {
 		m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s", r))
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	} else {
 		return aws.ToBool(GetMethod.ApiKeyRequired)
 	}

@@ -226,9 +226,9 @@ func (m *Inventory2Module) PrintInventoryPerRegion(outputDirectory string, verbo
 
 	for _, region := range m.AWSRegions {
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -381,7 +381,7 @@ func (m *Inventory2Module) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	lootFile := filepath.Join(path, "inventory.txt")
 	var out string
@@ -393,7 +393,7 @@ func (m *Inventory2Module) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(lootFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -433,7 +433,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 	}
 
 	// AppRunner is not supported in the aws service region catalog so we have to run it in all regions
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	go m.getAppRunnerServicesPerRegion(r, wg, semaphore)
 
@@ -442,11 +442,11 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayvAPIsPerRegion(r, wg, semaphore)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayv2APIsPerRegion(r, wg, semaphore)
 	}
@@ -456,7 +456,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAthenaDatabasesPerRegion(r, wg, semaphore)
 		// wg.Add(1)
@@ -468,7 +468,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCloud9EnvironmentsPerRegion(r, wg, semaphore)
 	}
@@ -478,7 +478,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCloudFormationStacksPerRegion(r, wg, semaphore)
 	}
@@ -488,7 +488,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCodeArtifactDomainsPerRegion(r, wg, semaphore)
 	}
@@ -498,7 +498,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCodeBuildProjectsPerRegion(r, wg, semaphore)
 	}
@@ -508,7 +508,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCodeCommitRepositoriesPerRegion(r, wg, semaphore)
 	}
@@ -518,7 +518,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getCodeDeployApplicationsPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -531,7 +531,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getDataPipelinePipelinesPerRegion(r, wg, semaphore)
 	}
@@ -541,7 +541,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getDynamoDBTablesPerRegion(r, wg, semaphore)
 	}
@@ -551,7 +551,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEc2InstancesPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -567,7 +567,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEcsTasksPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -582,7 +582,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEcrRepositoriesPerRegion(r, wg, semaphore)
 	}
@@ -592,7 +592,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEksClustersPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -604,11 +604,11 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getELBv2ListenersPerRegion(r, wg, semaphore)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getELBListenersPerRegion(r, wg, semaphore)
 	}
@@ -618,7 +618,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getElasticacheClustersPerRegion(r, wg, semaphore)
 	}
@@ -628,7 +628,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getElasticBeanstalkApplicationsPerRegion(r, wg, semaphore)
 	}
@@ -638,7 +638,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEMRClustersPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -650,7 +650,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getOpenSearchPerRegion(r, wg, semaphore)
 	}
@@ -660,7 +660,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getGrafanaWorkspacesPerRegion(r, wg, semaphore)
 	}
@@ -670,7 +670,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getGlueDevEndpointsPerRegion(r, wg, semaphore)
 		wg.Add(1)
@@ -687,7 +687,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getKinesisDatastreamsPerRegion(r, wg, semaphore)
 	}
@@ -697,7 +697,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 
 		wg.Add(1)
 		go m.getLambdaFunctionsPerRegion(r, wg, semaphore)
@@ -708,7 +708,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLightsailInstancesAndContainersPerRegion(r, wg, semaphore)
 	}
@@ -718,7 +718,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getMqBrokersPerRegion(r, wg, semaphore)
 	}
@@ -728,7 +728,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getRdsClustersPerRegion(r, wg, semaphore)
 	}
@@ -738,7 +738,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getRedshiftClustersPerRegion(r, wg, semaphore)
 	}
@@ -748,7 +748,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSecretsManagerSecretsPerRegion(r, wg, semaphore)
 	}
@@ -758,7 +758,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSNSTopicsPerRegion(r, wg, semaphore)
 	}
@@ -768,7 +768,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSQSQueuesPerRegion(r, wg, semaphore)
 	}
@@ -778,7 +778,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSSMParametersPerRegion(r, wg, semaphore)
 	}
@@ -788,7 +788,7 @@ func (m *Inventory2Module) executeChecks(r string, wg *sync.WaitGroup, semaphore
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getStepFunctionsPerRegion(r, wg, semaphore)
 	}
@@ -803,16 +803,16 @@ func (m *Inventory2Module) PrintTotalResources(AWSOutputType string) {
 func (m *Inventory2Module) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "Lambda Functions"
 	var resourceNames []string
@@ -820,7 +820,7 @@ func (m *Inventory2Module) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGr
 	ListFunctions, err := sdk.CachedLambdaListFunctions(m.LambdaClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -844,17 +844,17 @@ func (m *Inventory2Module) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGr
 func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
 
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "Athena Databases"
@@ -863,7 +863,7 @@ func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGr
 	ListDataCatalogs, err := sdk.CachedAthenaListDataCatalogs(m.AthenaClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -872,7 +872,7 @@ func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGr
 		ListDatabases, err := sdk.CachedAthenaListDatabases(m.AthenaClient, aws.ToString(m.Caller.Account), r, aws.ToString(dc.CatalogName))
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 
@@ -898,17 +898,17 @@ func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGr
 // func (m *Inventory2Module) getAthenaDataCatalogsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 // 	defer func() {
 // 		wg.Done()
-// 		m.CommandCounter.Executing--
-// 		m.CommandCounter.Complete++
+// 		m.CommandCounter.DecrExecuting()
+// 		m.CommandCounter.IncrComplete()
 // 	}()
 // 	semaphore <- struct{}{}
 // 	defer func() {
 // 		<-semaphore
 // 	}()
 
-// 	// m.CommandCounter.Total++
-// 	m.CommandCounter.Pending--
-// 	m.CommandCounter.Executing++
+// 	// m.CommandCounter.IncrTotal()
+// 	m.CommandCounter.DecrPending()
+// 	m.CommandCounter.IncrExecuting()
 
 // 	var totalCountThisServiceThisRegion = 0
 // 	var service = "Athena Data Catalogs"
@@ -917,7 +917,7 @@ func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGr
 // 	ListDataCatalogs, err := sdk.CachedAthenaListDataCatalogs(m.AthenaClient, aws.ToString(m.Caller.Account), r)
 // 	if err != nil {
 // 		m.modLog.Error(err.Error())
-// 		m.CommandCounter.Error++
+// 		m.CommandCounter.IncrError()
 // 		return
 // 	}
 
@@ -943,16 +943,16 @@ func (m *Inventory2Module) getAthenaDatabasesPerRegion(r string, wg *sync.WaitGr
 func (m *Inventory2Module) getEc2InstancesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EC2 Instances"
@@ -963,7 +963,7 @@ func (m *Inventory2Module) getEc2InstancesPerRegion(r string, wg *sync.WaitGroup
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -988,16 +988,16 @@ func (m *Inventory2Module) getEc2InstancesPerRegion(r string, wg *sync.WaitGroup
 func (m *Inventory2Module) getEc2ImagesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EC2 AMIs"
@@ -1008,7 +1008,7 @@ func (m *Inventory2Module) getEc2ImagesPerRegion(r string, wg *sync.WaitGroup, s
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1032,16 +1032,16 @@ func (m *Inventory2Module) getEc2ImagesPerRegion(r string, wg *sync.WaitGroup, s
 func (m *Inventory2Module) getEc2SnapshotsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EC2 Snapshots"
@@ -1052,7 +1052,7 @@ func (m *Inventory2Module) getEc2SnapshotsPerRegion(r string, wg *sync.WaitGroup
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1076,16 +1076,16 @@ func (m *Inventory2Module) getEc2SnapshotsPerRegion(r string, wg *sync.WaitGroup
 func (m *Inventory2Module) getEc2VolumesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EC2 Volumes"
@@ -1096,7 +1096,7 @@ func (m *Inventory2Module) getEc2VolumesPerRegion(r string, wg *sync.WaitGroup, 
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1120,16 +1120,16 @@ func (m *Inventory2Module) getEc2VolumesPerRegion(r string, wg *sync.WaitGroup, 
 func (m *Inventory2Module) getEksClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EKS Clusters"
@@ -1138,7 +1138,7 @@ func (m *Inventory2Module) getEksClustersPerRegion(r string, wg *sync.WaitGroup,
 	ListClusters, err := sdk.CachedEKSListClusters(m.EKSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1163,16 +1163,16 @@ func (m *Inventory2Module) getEksClustersPerRegion(r string, wg *sync.WaitGroup,
 func (m *Inventory2Module) getEKSNodeGroupsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EKS Cluster NodeGroups"
@@ -1181,7 +1181,7 @@ func (m *Inventory2Module) getEKSNodeGroupsPerRegion(r string, wg *sync.WaitGrou
 	ListClusters, err := sdk.CachedEKSListClusters(m.EKSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1189,7 +1189,7 @@ func (m *Inventory2Module) getEKSNodeGroupsPerRegion(r string, wg *sync.WaitGrou
 		NodeGroups, err := sdk.CachedEKSListNodeGroups(m.EKSClient, aws.ToString(m.Caller.Account), r, cluster)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		// Add this page of resources to the total count
@@ -1214,16 +1214,16 @@ func (m *Inventory2Module) getEKSNodeGroupsPerRegion(r string, wg *sync.WaitGrou
 func (m *Inventory2Module) getCloudFormationStacksPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "CloudFormation Stacks"
@@ -1233,7 +1233,7 @@ func (m *Inventory2Module) getCloudFormationStacksPerRegion(r string, wg *sync.W
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1259,16 +1259,16 @@ func (m *Inventory2Module) getCloudFormationStacksPerRegion(r string, wg *sync.W
 func (m *Inventory2Module) getElasticacheClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "Elasticache Clusters"
@@ -1278,7 +1278,7 @@ func (m *Inventory2Module) getElasticacheClustersPerRegion(r string, wg *sync.Wa
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1302,16 +1302,16 @@ func (m *Inventory2Module) getElasticacheClustersPerRegion(r string, wg *sync.Wa
 func (m *Inventory2Module) getElasticBeanstalkApplicationsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "ElasticBeanstalk Applications"
@@ -1321,7 +1321,7 @@ func (m *Inventory2Module) getElasticBeanstalkApplicationsPerRegion(r string, wg
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1346,16 +1346,16 @@ func (m *Inventory2Module) getElasticBeanstalkApplicationsPerRegion(r string, wg
 func (m *Inventory2Module) getEMRClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "EMR Clusters"
@@ -1365,7 +1365,7 @@ func (m *Inventory2Module) getEMRClustersPerRegion(r string, wg *sync.WaitGroup,
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1389,16 +1389,16 @@ func (m *Inventory2Module) getEMRClustersPerRegion(r string, wg *sync.WaitGroup,
 func (m *Inventory2Module) GetEMRInstancesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "EMR Instances"
@@ -1408,7 +1408,7 @@ func (m *Inventory2Module) GetEMRInstancesPerRegion(r string, wg *sync.WaitGroup
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1418,7 +1418,7 @@ func (m *Inventory2Module) GetEMRInstancesPerRegion(r string, wg *sync.WaitGroup
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 
@@ -1443,16 +1443,16 @@ func (m *Inventory2Module) GetEMRInstancesPerRegion(r string, wg *sync.WaitGroup
 func (m *Inventory2Module) getSecretsManagerSecretsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "SecretsManager Secrets"
@@ -1462,7 +1462,7 @@ func (m *Inventory2Module) getSecretsManagerSecretsPerRegion(r string, wg *sync.
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1487,16 +1487,16 @@ func (m *Inventory2Module) getSecretsManagerSecretsPerRegion(r string, wg *sync.
 func (m *Inventory2Module) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "RDS DB Instances"
@@ -1505,7 +1505,7 @@ func (m *Inventory2Module) getRdsClustersPerRegion(r string, wg *sync.WaitGroup,
 	DescribeDBInstances, err := sdk.CachedRDSDescribeDBInstances(m.RDSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1528,16 +1528,16 @@ func (m *Inventory2Module) getRdsClustersPerRegion(r string, wg *sync.WaitGroup,
 func (m *Inventory2Module) getAPIGatewayvAPIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "APIGateway RestAPIs"
@@ -1547,7 +1547,7 @@ func (m *Inventory2Module) getAPIGatewayvAPIsPerRegion(r string, wg *sync.WaitGr
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1571,16 +1571,16 @@ func (m *Inventory2Module) getAPIGatewayvAPIsPerRegion(r string, wg *sync.WaitGr
 func (m *Inventory2Module) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "APIGatewayv2 APIs"
@@ -1590,7 +1590,7 @@ func (m *Inventory2Module) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitG
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1614,15 +1614,15 @@ func (m *Inventory2Module) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitG
 func (m *Inventory2Module) getELBv2ListenersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "ELBv2 Load Balancers"
 	var resourceNames []string
@@ -1630,7 +1630,7 @@ func (m *Inventory2Module) getELBv2ListenersPerRegion(r string, wg *sync.WaitGro
 	DescribeLoadBalancers, err := sdk.CachedELBv2DescribeLoadBalancers(m.ELBv2Client, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1654,16 +1654,16 @@ func (m *Inventory2Module) getELBv2ListenersPerRegion(r string, wg *sync.WaitGro
 func (m *Inventory2Module) getELBListenersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "ELB Load Balancers"
@@ -1673,7 +1673,7 @@ func (m *Inventory2Module) getELBListenersPerRegion(r string, wg *sync.WaitGroup
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1697,16 +1697,16 @@ func (m *Inventory2Module) getELBListenersPerRegion(r string, wg *sync.WaitGroup
 func (m *Inventory2Module) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
 
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "MQ Brokers"
 	var resourceNames []string
@@ -1714,7 +1714,7 @@ func (m *Inventory2Module) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, s
 	ListBrokers, err := sdk.CachedMQListBrokers(m.MQClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1737,16 +1737,16 @@ func (m *Inventory2Module) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, s
 func (m *Inventory2Module) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "OpenSearch DomainNames"
@@ -1755,7 +1755,7 @@ func (m *Inventory2Module) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, 
 	ListDomainNames, err := sdk.CachedOpenSearchListDomainNames(m.OpenSearchClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1780,16 +1780,16 @@ func (m *Inventory2Module) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, 
 func (m *Inventory2Module) getGrafanaWorkspacesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "Grafana Workspaces"
@@ -1800,7 +1800,7 @@ func (m *Inventory2Module) getGrafanaWorkspacesPerRegion(r string, wg *sync.Wait
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1824,16 +1824,16 @@ func (m *Inventory2Module) getGrafanaWorkspacesPerRegion(r string, wg *sync.Wait
 func (m *Inventory2Module) getAppRunnerServicesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "AppRunner Services"
@@ -1844,7 +1844,7 @@ func (m *Inventory2Module) getAppRunnerServicesPerRegion(r string, wg *sync.Wait
 	if err != nil {
 		//modLog.Error(err.Error())
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1867,16 +1867,16 @@ func (m *Inventory2Module) getAppRunnerServicesPerRegion(r string, wg *sync.Wait
 func (m *Inventory2Module) getLightsailInstancesAndContainersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "Lightsail Instances/Containers"
@@ -1886,7 +1886,7 @@ func (m *Inventory2Module) getLightsailInstancesAndContainersPerRegion(r string,
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	} else {
 		// Add this page of resources to the total count
@@ -1902,7 +1902,7 @@ func (m *Inventory2Module) getLightsailInstancesAndContainersPerRegion(r string,
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1926,16 +1926,16 @@ func (m *Inventory2Module) getLightsailInstancesAndContainersPerRegion(r string,
 func (m *Inventory2Module) getSSMParametersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "SSM Parameters"
 	var resourceNames []string
@@ -1944,7 +1944,7 @@ func (m *Inventory2Module) getSSMParametersPerRegion(r string, wg *sync.WaitGrou
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1969,16 +1969,16 @@ func (m *Inventory2Module) getSSMParametersPerRegion(r string, wg *sync.WaitGrou
 func (m *Inventory2Module) getEcsTasksPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "ECS Tasks"
@@ -1988,7 +1988,7 @@ func (m *Inventory2Module) getEcsTasksPerRegion(r string, wg *sync.WaitGroup, se
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, cluster := range Clusters {
@@ -1997,7 +1997,7 @@ func (m *Inventory2Module) getEcsTasksPerRegion(r string, wg *sync.WaitGroup, se
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		// Add this page of resources to the total count
@@ -2022,16 +2022,16 @@ func (m *Inventory2Module) getEcsTasksPerRegion(r string, wg *sync.WaitGroup, se
 func (m *Inventory2Module) getEcsServicesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "ECS Services"
@@ -2041,7 +2041,7 @@ func (m *Inventory2Module) getEcsServicesPerRegion(r string, wg *sync.WaitGroup,
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, cluster := range Clusters {
@@ -2050,7 +2050,7 @@ func (m *Inventory2Module) getEcsServicesPerRegion(r string, wg *sync.WaitGroup,
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		// Add this page of resources to the total count
@@ -2076,16 +2076,16 @@ func (m *Inventory2Module) getEcsServicesPerRegion(r string, wg *sync.WaitGroup,
 func (m *Inventory2Module) getEcsClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "ECS Clusters"
@@ -2095,7 +2095,7 @@ func (m *Inventory2Module) getEcsClustersPerRegion(r string, wg *sync.WaitGroup,
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2120,16 +2120,16 @@ func (m *Inventory2Module) getEcrRepositoriesPerRegion(r string, wg *sync.WaitGr
 	// Don't use this method as a template for future ones. There is a one off in the way the NextToken is handled.
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "ECR Repositories"
@@ -2139,7 +2139,7 @@ func (m *Inventory2Module) getEcrRepositoriesPerRegion(r string, wg *sync.WaitGr
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2164,16 +2164,16 @@ func (m *Inventory2Module) getGlueDevEndpointsPerRegion(r string, wg *sync.WaitG
 	// Don't use this method as a template for future ones. There is a one off in the way the NextToken is handled.
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "Glue Dev Endpoints"
 	var resourceNames []string
@@ -2182,7 +2182,7 @@ func (m *Inventory2Module) getGlueDevEndpointsPerRegion(r string, wg *sync.WaitG
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2207,16 +2207,16 @@ func (m *Inventory2Module) getGlueDevEndpointsPerRegion(r string, wg *sync.WaitG
 func (m *Inventory2Module) getGlueJobsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "Glue Jobs"
@@ -2226,7 +2226,7 @@ func (m *Inventory2Module) getGlueJobsPerRegion(r string, wg *sync.WaitGroup, se
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2251,16 +2251,16 @@ func (m *Inventory2Module) getGlueJobsPerRegion(r string, wg *sync.WaitGroup, se
 func (m *Inventory2Module) getGlueDatabasesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "Glue Databases"
@@ -2269,7 +2269,7 @@ func (m *Inventory2Module) getGlueDatabasesPerRegion(r string, wg *sync.WaitGrou
 	Databases, err := sdk.CachedGlueGetDatabases(m.GlueClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2298,16 +2298,16 @@ func (m *Inventory2Module) getGlueDatabasesPerRegion(r string, wg *sync.WaitGrou
 func (m *Inventory2Module) getGlueTablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "Glue Jobs"
@@ -2316,7 +2316,7 @@ func (m *Inventory2Module) getGlueTablesPerRegion(r string, wg *sync.WaitGroup, 
 	Databases, err := sdk.CachedGlueGetDatabases(m.GlueClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2324,7 +2324,7 @@ func (m *Inventory2Module) getGlueTablesPerRegion(r string, wg *sync.WaitGroup, 
 		TableNames, err := sdk.CachedGlueGetTables(m.GlueClient, aws.ToString(m.Caller.Account), r, aws.ToString(database.Name))
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 
 		}
@@ -2351,16 +2351,16 @@ func (m *Inventory2Module) getGlueTablesPerRegion(r string, wg *sync.WaitGroup, 
 func (m *Inventory2Module) getKinesisDatastreamsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	var totalCountThisServiceThisRegion = 0
 	var service = "Kinesis Data Streams"
@@ -2369,7 +2369,7 @@ func (m *Inventory2Module) getKinesisDatastreamsPerRegion(r string, wg *sync.Wai
 	Datastreams, err := sdk.CachedKinesisListStreams(m.KinesisClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2394,16 +2394,16 @@ func (m *Inventory2Module) getKinesisDatastreamsPerRegion(r string, wg *sync.Wai
 func (m *Inventory2Module) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var totalCountThisServiceThisRegion = 0
 	var service = "SNS Topics"
@@ -2413,7 +2413,7 @@ func (m *Inventory2Module) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, s
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2435,16 +2435,16 @@ func (m *Inventory2Module) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, s
 func (m *Inventory2Module) getSQSQueuesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "SQS Queues"
 	var resourceNames []string
@@ -2453,7 +2453,7 @@ func (m *Inventory2Module) getSQSQueuesPerRegion(r string, wg *sync.WaitGroup, s
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2477,16 +2477,16 @@ func (m *Inventory2Module) getSQSQueuesPerRegion(r string, wg *sync.WaitGroup, s
 func (m *Inventory2Module) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "DynamoDB Tables"
 	var resourceNames []string
@@ -2494,7 +2494,7 @@ func (m *Inventory2Module) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGro
 	TableNames, err := sdk.CachedDynamoDBListTables(m.DynamoDBClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2520,16 +2520,16 @@ func (m *Inventory2Module) getDynamoDBTablesPerRegion(r string, wg *sync.WaitGro
 func (m *Inventory2Module) getRedshiftClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "Redshift Clusters"
 	var resourceNames []string
@@ -2537,7 +2537,7 @@ func (m *Inventory2Module) getRedshiftClustersPerRegion(r string, wg *sync.WaitG
 	Clusters, err := sdk.CachedRedShiftDescribeClusters(m.RedshiftClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2563,16 +2563,16 @@ func (m *Inventory2Module) getRedshiftClustersPerRegion(r string, wg *sync.WaitG
 func (m *Inventory2Module) getCodeArtifactDomainsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "CodeArtifact Domains"
 	var resourceNames []string
@@ -2580,7 +2580,7 @@ func (m *Inventory2Module) getCodeArtifactDomainsPerRegion(r string, wg *sync.Wa
 	Domains, err := sdk.CachedCodeArtifactListDomains(m.CodeArtifactClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2606,16 +2606,16 @@ func (m *Inventory2Module) getCodeArtifactDomainsPerRegion(r string, wg *sync.Wa
 func (m *Inventory2Module) getCodeBuildProjectsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "CodeBuild Projects"
 	var resourceNames []string
@@ -2623,7 +2623,7 @@ func (m *Inventory2Module) getCodeBuildProjectsPerRegion(r string, wg *sync.Wait
 	projects, err := sdk.CachedCodeBuildListProjects(m.CodeBuildClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2649,16 +2649,16 @@ func (m *Inventory2Module) getCodeBuildProjectsPerRegion(r string, wg *sync.Wait
 func (m *Inventory2Module) getCodeCommitRepositoriesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "CodeCommit Repositories"
 	var resourceNames []string
@@ -2666,7 +2666,7 @@ func (m *Inventory2Module) getCodeCommitRepositoriesPerRegion(r string, wg *sync
 	repos, err := sdk.CachedCodeCommitListRepositories(m.CodeCommitClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2690,16 +2690,16 @@ func (m *Inventory2Module) getCodeCommitRepositoriesPerRegion(r string, wg *sync
 func (m *Inventory2Module) getCodeDeployApplicationsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "CodeDeploy Applications"
 	var resourceNames []string
@@ -2707,7 +2707,7 @@ func (m *Inventory2Module) getCodeDeployApplicationsPerRegion(r string, wg *sync
 	apps, err := sdk.CachedCodeDeployListApplications(m.CodeDeployClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 
 	}
@@ -2732,16 +2732,16 @@ func (m *Inventory2Module) getCodeDeployApplicationsPerRegion(r string, wg *sync
 func (m *Inventory2Module) getCodeDeployDeploymentsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "CodeDeploy Deployments"
 	var resourceNames []string
@@ -2749,7 +2749,7 @@ func (m *Inventory2Module) getCodeDeployDeploymentsPerRegion(r string, wg *sync.
 	deployments, err := sdk.CachedCodeDeployListDeployments(m.CodeDeployClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 
 	}
@@ -2774,16 +2774,16 @@ func (m *Inventory2Module) getCodeDeployDeploymentsPerRegion(r string, wg *sync.
 func (m *Inventory2Module) getDataPipelinePipelinesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "DataPipeline Pipelines"
 	var resourceNames []string
@@ -2792,7 +2792,7 @@ func (m *Inventory2Module) getDataPipelinePipelinesPerRegion(r string, wg *sync.
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 
 	}
@@ -2817,16 +2817,16 @@ func (m *Inventory2Module) getDataPipelinePipelinesPerRegion(r string, wg *sync.
 func (m *Inventory2Module) getStepFunctionsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "StepFunctions State Machines"
 	var resourceNames []string
@@ -2835,7 +2835,7 @@ func (m *Inventory2Module) getStepFunctionsPerRegion(r string, wg *sync.WaitGrou
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2859,15 +2859,15 @@ func (m *Inventory2Module) getStepFunctionsPerRegion(r string, wg *sync.WaitGrou
 func (m *Inventory2Module) getCloud9EnvironmentsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
+		m.CommandCounter.DecrExecuting()
 	}()
 	semaphore <- struct{}{}
 	defer func() {
 		<-semaphore
 	}()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var totalCountThisServiceThisRegion = 0
 	var service = "Cloud9 Environments"
 	var resourceNames []string
@@ -2876,7 +2876,7 @@ func (m *Inventory2Module) getCloud9EnvironmentsPerRegion(r string, wg *sync.Wai
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 
 	}
@@ -2913,7 +2913,7 @@ func (m *Inventory2Module) getBuckets(verbosity int, dataReceiver chan GlobalRes
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2957,7 +2957,7 @@ func (m *Inventory2Module) getCloudfrontDistros(verbosity int, dataReceiver chan
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -2997,7 +2997,7 @@ func (m *Inventory2Module) getIAMUsers(verbosity int, dataReceiver chan GlobalRe
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	total = total + len(Users)
@@ -3034,7 +3034,7 @@ func (m *Inventory2Module) getIAMRoles(verbosity int, dataReceiver chan GlobalRe
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	total = total + len(Roles)
@@ -3073,7 +3073,7 @@ func (m *Inventory2Module) getIAMGroups(verbosity int, dataReceiver chan GlobalR
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	total = total + len(Groups)
@@ -3112,7 +3112,7 @@ func (m *Inventory2Module) getIAMAccessKeys(verbosity int, dataReceiver chan Glo
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -3122,7 +3122,7 @@ func (m *Inventory2Module) getIAMAccessKeys(verbosity int, dataReceiver chan Glo
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		total = total + len(AccessKeys)
@@ -3162,7 +3162,7 @@ func (m *Inventory2Module) getRoute53Zones(verbosity int, dataReceiver chan Glob
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	total = total + len(Zones)
@@ -3200,7 +3200,7 @@ func (m *Inventory2Module) getRoute53Records(verbosity int, dataReceiver chan Gl
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -3209,7 +3209,7 @@ func (m *Inventory2Module) getRoute53Records(verbosity int, dataReceiver chan Gl
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		total = total + len(Records)

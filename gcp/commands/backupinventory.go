@@ -283,7 +283,7 @@ func (m *BackupInventoryModule) enumerateDisks(ctx context.Context, projectID st
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_BACKUPINVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate disks in project %s", projectID))
 	}
@@ -376,7 +376,7 @@ func (m *BackupInventoryModule) enumerateSnapshots(ctx context.Context, projectI
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_BACKUPINVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate snapshots in project %s", projectID))
 	}
@@ -445,7 +445,7 @@ func (m *BackupInventoryModule) trackSnapshotProtection(projectID string) {
 func (m *BackupInventoryModule) enumerateSQLBackups(ctx context.Context, projectID string, sqlService *sqladmin.Service, logger internal.Logger) {
 	instances, err := sqlService.Instances.List(projectID).Do()
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_BACKUPINVENTORY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate SQL instances in project %s", projectID))
 		return

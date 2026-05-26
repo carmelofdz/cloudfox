@@ -446,7 +446,7 @@ func (m *WorkloadIdentityModule) writeHierarchicalOutput(ctx context.Context, lo
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_WORKLOAD_IDENTITY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -487,7 +487,7 @@ func (m *WorkloadIdentityModule) writeFlatOutput(ctx context.Context, logger int
 		output,
 	)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_WORKLOAD_IDENTITY_MODULE_NAME,
 			"Could not write output")
 	}

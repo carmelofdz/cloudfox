@@ -326,7 +326,7 @@ func (m *PermissionsModule) processProject(ctx context.Context, projectID string
 	iamService := IAMService.New()
 	entityPerms, groupInfos, err := iamService.GetAllEntityPermissionsWithGroupExpansion(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_PERMISSIONS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate permissions in project %s", projectID))
 		return
@@ -1119,7 +1119,7 @@ func (m *PermissionsModule) writeHierarchicalOutput(ctx context.Context, logger 
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_PERMISSIONS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1207,7 +1207,7 @@ func (m *PermissionsModule) writeHierarchicalOutputTee(ctx context.Context, logg
 	err := internal.HandleHierarchicalOutputTee(config)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing tee streaming output: %v", err), globals.GCP_PERMISSIONS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1280,7 +1280,7 @@ func (m *PermissionsModule) writeFlatOutput(ctx context.Context, logger internal
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_PERMISSIONS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

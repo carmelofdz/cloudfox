@@ -376,7 +376,7 @@ func (m *IdentityFederationModule) writeHierarchicalOutput(ctx context.Context, 
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_IDENTITY_FEDERATION_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -420,7 +420,7 @@ func (m *IdentityFederationModule) writeFlatOutput(ctx context.Context, logger i
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_IDENTITY_FEDERATION_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

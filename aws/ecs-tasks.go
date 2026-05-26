@@ -100,7 +100,7 @@ func (m *ECSTasksModule) ECSTasks(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, dataReceiver)
 
 	}
@@ -254,7 +254,7 @@ func (m *ECSTasksModule) writeLoot(outputDirectory string) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	privateIPsFilename := filepath.Join(path, "ecs-tasks-PrivateIPs.txt")
 	publicIPsFilename := filepath.Join(path, "ecs-tasks-PublicIPs.txt")
@@ -274,12 +274,12 @@ func (m *ECSTasksModule) writeLoot(outputDirectory string) {
 	err = os.WriteFile(privateIPsFilename, []byte(privateIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	err = os.WriteFile(publicIPsFilename, []byte(publicIPs), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, task := range m.MappedECSTasks {
@@ -288,14 +288,14 @@ func (m *ECSTasksModule) writeLoot(outputDirectory string) {
 			err := os.MkdirAll(path, os.ModePerm)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 			}
 			taskDefinitionFilename := filepath.Join(path, task.TaskDefinitionName+".json")
 
 			err = os.WriteFile(taskDefinitionFilename, []byte(task.TaskDefinitionContent), 0644)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 			}
 		}
 	}
@@ -321,12 +321,12 @@ func (m *ECSTasksModule) executeChecks(r string, wg *sync.WaitGroup, dataReceive
 	}
 	if res {
 
-		m.CommandCounter.Total++
-		m.CommandCounter.Pending--
-		m.CommandCounter.Executing++
+		m.CommandCounter.IncrTotal()
+		m.CommandCounter.DecrPending()
+		m.CommandCounter.IncrExecuting()
 		m.getListClusters(r, dataReceiver)
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}
 }
 
@@ -335,7 +335,7 @@ func (m *ECSTasksModule) getListClusters(region string, dataReceiver chan Mapped
 	ClusterArns, err := sdk.CachedECSListClusters(m.ECSClient, aws.ToString(m.Caller.Account), region)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -349,7 +349,7 @@ func (m *ECSTasksModule) getListTasks(clusterARN string, region string, dataRece
 	TaskArns, err := sdk.CachedECSListTasks(m.ECSClient, aws.ToString(m.Caller.Account), region, clusterARN)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -374,7 +374,7 @@ func (m *ECSTasksModule) loadTasksData(clusterARN string, taskARNs []string, reg
 	Tasks, err := sdk.CachedECSDescribeTasks(m.ECSClient, aws.ToString(m.Caller.Account), region, clusterARN, taskARNs)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -388,7 +388,7 @@ func (m *ECSTasksModule) loadTasksData(clusterARN string, taskARNs []string, reg
 	publicIPs, err := m.loadPublicIPs(eniIDs, region)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -397,7 +397,7 @@ func (m *ECSTasksModule) loadTasksData(clusterARN string, taskARNs []string, reg
 		taskDefinition, err := sdk.CachedECSDescribeTaskDefinition(m.ECSClient, aws.ToString(m.Caller.Account), region, aws.ToString(task.TaskDefinitionArn))
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		mappedTask := MappedECSTask{
@@ -446,7 +446,7 @@ func (m *ECSTasksModule) describeTaskDefinition(taskDefinitionArn string, region
 	)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return types.TaskDefinition{}, err
 	}
 	return *DescribeTaskDefinition.TaskDefinition, nil
@@ -466,7 +466,7 @@ func (m *ECSTasksModule) loadAllPublicIPs(eniIDs []string, region string) (map[s
 		publicIPs, err := m.loadPublicIPs(eniIDs[i:j], region)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return nil, fmt.Errorf("getting elastic network interfaces: %s", err)
 		}
 

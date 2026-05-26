@@ -142,7 +142,7 @@ func (m *InstancesModule) processProject(ctx context.Context, projectID string, 
 	ces := ComputeEngineService.New()
 	instances, projectMeta, err := ces.InstancesWithMetadata(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_INSTANCES_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate instances in project %s", projectID))
 		return
@@ -582,7 +582,7 @@ func (m *InstancesModule) writeHierarchicalOutput(ctx context.Context, logger in
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_INSTANCES_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -663,7 +663,7 @@ func (m *InstancesModule) writeFlatOutput(ctx context.Context, logger internal.L
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_INSTANCES_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

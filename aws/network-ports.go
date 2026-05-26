@@ -50,9 +50,6 @@ var (
 # Make sure the host you scan IPv6 from has an IPv6 network interface.
 #############################################
 `
-
-	naclsMutex          = sync.RWMutex{}
-	securityGroupsMutex = sync.RWMutex{}
 )
 
 type NetworkPortsModule struct {
@@ -77,11 +74,13 @@ type NetworkPortsModule struct {
 	ServiceMap *awsservicemap.AwsServiceMap // Shared service map to avoid repeated HTTP requests
 
 	// Main module data
-	IPv4_Private   []NetworkService
-	IPv4_Public    []NetworkService
-	IPv6           []NetworkService
-	nacls          map[string]*[]ec2_types.NetworkAcl
-	securityGroups map[string]*[]ec2_types.SecurityGroup
+	IPv4_Private        []NetworkService
+	IPv4_Public         []NetworkService
+	IPv6                []NetworkService
+	nacls               map[string]*[]ec2_types.NetworkAcl
+	securityGroups      map[string]*[]ec2_types.SecurityGroup
+	naclsMutex          sync.RWMutex
+	securityGroupsMutex sync.RWMutex
 
 	CommandCounter internal.CommandCounter
 	// Used to store output data for pretty printing
@@ -172,7 +171,7 @@ func (m *NetworkPortsModule) PrintNetworkPorts(outputDirectory string) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, dataReceiver)
 
 	}
@@ -287,7 +286,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getEC2NetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -296,7 +295,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getECSNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -305,7 +304,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getEFSNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -314,7 +313,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getElastiCacheNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -323,7 +322,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getLBNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -332,7 +331,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getLightsailNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -341,7 +340,7 @@ func (m *NetworkPortsModule) executeChecks(r string, wg *sync.WaitGroup, dataRec
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getRdsNetworkPortsPerRegion(r, dataReceiver)
 	}
 
@@ -429,8 +428,8 @@ func (m *NetworkPortsModule) writeLootFile(filename string, bannner string, ipv4
 
 func (m *NetworkPortsModule) getEC2NetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -533,8 +532,8 @@ func (m *NetworkPortsModule) getEC2NetworkPortsPerRegion(r string, dataReceiver 
 
 func (m *NetworkPortsModule) getECSNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -548,7 +547,7 @@ func (m *NetworkPortsModule) getECSNetworkPortsPerRegion(r string, dataReceiver 
 			service, err := m.describeECSService(serviceArn, &clusterArn, r)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 
@@ -585,7 +584,7 @@ func (m *NetworkPortsModule) getECSNetworkPortsPerRegion(r string, dataReceiver 
 				task, err := m.describeECSTask(taskArn, &clusterArn, r)
 				if err != nil {
 					m.modLog.Error(err.Error())
-					m.CommandCounter.Error++
+					m.CommandCounter.IncrError()
 					break
 				}
 
@@ -668,8 +667,8 @@ func (m *NetworkPortsModule) getECSNetworkPortsPerRegion(r string, dataReceiver 
 
 func (m *NetworkPortsModule) getEFSNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -731,8 +730,8 @@ func (m *NetworkPortsModule) getEFSNetworkPortsPerRegion(r string, dataReceiver 
 
 func (m *NetworkPortsModule) getElastiCacheNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -843,8 +842,8 @@ func (m *NetworkPortsModule) getElastiCacheNetworkPortsPerRegion(r string, dataR
 
 func (m *NetworkPortsModule) getLBNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -959,8 +958,8 @@ func (m *NetworkPortsModule) getLBNetworkPortsPerRegion(r string, dataReceiver c
 
 func (m *NetworkPortsModule) getLightsailNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	instances := m.getLightsailInstancesPerRegion(r)
 
@@ -1070,8 +1069,8 @@ func (m *NetworkPortsModule) getLightsailNetworkPortsPerRegion(r string, dataRec
 
 func (m *NetworkPortsModule) getRdsNetworkPortsPerRegion(r string, dataReceiver chan NetworkServices) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
 	securityGroups := m.getEC2SecurityGroupsPerRegion(r)
 	nacls := m.getEC2NACLsPerRegion(r)
@@ -1143,12 +1142,15 @@ func (m *NetworkPortsModule) getRdsNetworkPortsPerRegion(r string, dataReceiver 
 }
 
 func (m *NetworkPortsModule) getEC2SecurityGroupsPerRegion(region string) []ec2_types.SecurityGroup {
+	m.securityGroupsMutex.RLock()
+	cached, ok := m.securityGroups[region]
+	m.securityGroupsMutex.RUnlock()
+	if ok && cached != nil {
+		return *cached
+	}
+
 	var securityGroups []ec2_types.SecurityGroup
 	var PaginationControl *string
-
-	if m.securityGroups[region] != nil {
-		return *m.securityGroups[region]
-	}
 
 	for {
 		DescribeSecurityGroups, err := m.EC2Client.DescribeSecurityGroups(
@@ -1162,7 +1164,7 @@ func (m *NetworkPortsModule) getEC2SecurityGroupsPerRegion(region string) []ec2_
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1176,9 +1178,9 @@ func (m *NetworkPortsModule) getEC2SecurityGroupsPerRegion(region string) []ec2_
 		}
 	}
 
-	securityGroupsMutex.Lock()
+	m.securityGroupsMutex.Lock()
 	m.securityGroups[region] = &securityGroups
-	securityGroupsMutex.Unlock()
+	m.securityGroupsMutex.Unlock()
 	return securityGroups
 }
 
@@ -1215,12 +1217,15 @@ func (m *NetworkPortsModule) parseSecurityGroup(group ec2_types.SecurityGroup) S
 }
 
 func (m *NetworkPortsModule) getEC2NACLsPerRegion(region string) []ec2_types.NetworkAcl {
+	m.naclsMutex.RLock()
+	cached, ok := m.nacls[region]
+	m.naclsMutex.RUnlock()
+	if ok && cached != nil {
+		return *cached
+	}
+
 	var nacls []ec2_types.NetworkAcl
 	var PaginationControl *string
-
-	if m.nacls[region] != nil {
-		return *m.nacls[region]
-	}
 
 	for {
 		DescribeNetworkAcls, err := m.EC2Client.DescribeNetworkAcls(
@@ -1234,7 +1239,7 @@ func (m *NetworkPortsModule) getEC2NACLsPerRegion(region string) []ec2_types.Net
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1248,9 +1253,9 @@ func (m *NetworkPortsModule) getEC2NACLsPerRegion(region string) []ec2_types.Net
 		}
 	}
 
-	naclsMutex.Lock()
+	m.naclsMutex.Lock()
 	m.nacls[region] = &nacls
-	naclsMutex.Unlock()
+	m.naclsMutex.Unlock()
 	return nacls
 }
 
@@ -1320,7 +1325,7 @@ func (m *NetworkPortsModule) getEC2InstancesPerRegion(region string) []ec2_types
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1359,7 +1364,7 @@ func (m *NetworkPortsModule) getEC2NetworkInterfacesPerRegion(interfaceId string
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1394,7 +1399,7 @@ func (m *NetworkPortsModule) getECSClustersPerRegion(region string) []string {
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1430,7 +1435,7 @@ func (m *NetworkPortsModule) getECSServicesPerRegion(clusterArn *string, region 
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1493,7 +1498,7 @@ func (m *NetworkPortsModule) getECSTasksPerRegion(service *string, clusterArn *s
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1553,7 +1558,7 @@ func (m *NetworkPortsModule) getEFSSharesPerRegion(region string) []efs_types.Fi
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1589,7 +1594,7 @@ func (m *NetworkPortsModule) getEFSMountTargetsPerRegion(filesystem *string, reg
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1624,7 +1629,7 @@ func (m *NetworkPortsModule) getElastiCacheClustersPerRegion(region string) []el
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1659,7 +1664,7 @@ func (m *NetworkPortsModule) getElastiCacheSubnetGroupsPerRegion(region string) 
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1694,7 +1699,7 @@ func (m *NetworkPortsModule) getElastiCacheReplicationGroupsPerRegion(region str
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1729,7 +1734,7 @@ func (m *NetworkPortsModule) getLightsailInstancesPerRegion(region string) []lig
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1764,7 +1769,7 @@ func (m *NetworkPortsModule) getLoadBalancersPerRegion(region string) []elbv2_ty
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1800,7 +1805,7 @@ func (m *NetworkPortsModule) getLBListenerPorts(arn *string, region string) ([]i
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1850,7 +1855,7 @@ func (m *NetworkPortsModule) getRdsClustersPerRegion(region string) []rds_types.
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1885,7 +1890,7 @@ func (m *NetworkPortsModule) getRdsInstancesPerRegion(region string) []rds_types
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 

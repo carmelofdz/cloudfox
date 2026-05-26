@@ -142,7 +142,7 @@ func (m *SchedulerModule) processProject(ctx context.Context, projectID string, 
 
 	jobs, err := ss.Jobs(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_SCHEDULER_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Scheduler jobs in project %s", projectID))
 		return
@@ -346,7 +346,7 @@ func (m *SchedulerModule) writeHierarchicalOutput(ctx context.Context, logger in
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_SCHEDULER_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -396,7 +396,7 @@ func (m *SchedulerModule) writeFlatOutput(ctx context.Context, logger internal.L
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_SCHEDULER_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

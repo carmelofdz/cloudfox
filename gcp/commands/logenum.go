@@ -130,7 +130,7 @@ func (m *LogEnumModule) processProject(ctx context.Context, projectID string, lo
 
 	entries, err := svc.EnumerateSensitiveLogs(projectID, m.Hours, m.MaxEntries, m.LogNameFilter)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_LOGGINGENUM_MODULE_NAME,
 			fmt.Sprintf("Could not scan logs in project %s", projectID))
 		return

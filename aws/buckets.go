@@ -88,7 +88,7 @@ func (m *BucketsModule) PrintBuckets(outputDirectory string, verbosity int) {
 	go m.Receiver(dataReceiver, receiverDone)
 
 	wg.Add(1)
-	m.CommandCounter.Pending++
+	m.CommandCounter.IncrPending()
 	go m.executeChecks(wg, semaphore, dataReceiver)
 
 	wg.Wait()
@@ -203,11 +203,11 @@ func (m *BucketsModule) Receiver(receiver chan BucketRow, receiverDone chan bool
 func (m *BucketsModule) executeChecks(wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan BucketRow) {
 	defer wg.Done()
 
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	m.createBucketsRows(m.output.Verbosity, wg, semaphore, dataReceiver)
-	m.CommandCounter.Executing--
-	m.CommandCounter.Complete++
+	m.CommandCounter.DecrExecuting()
+	m.CommandCounter.IncrComplete()
 }
 
 func (m *BucketsModule) writeLoot(outputDirectory string, verbosity int, profile string) {
@@ -256,8 +256,8 @@ func (m *BucketsModule) writeLoot(outputDirectory string, verbosity int, profile
 
 func (m *BucketsModule) createBucketsRows(verbosity int, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan BucketRow) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -357,7 +357,7 @@ func (m *BucketsModule) storeAccessPolicy(bucket *BucketRow) {
 
 	if err := m.storeFile(f, bucket.PolicyJSON); err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
