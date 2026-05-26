@@ -133,7 +133,7 @@ func (m *CloudArmorModule) processProject(ctx context.Context, projectID string,
 	// Get security policies
 	policies, err := svc.GetSecurityPolicies(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CLOUDARMOR_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Cloud Armor security policies in project %s", projectID))
 	}
@@ -141,7 +141,7 @@ func (m *CloudArmorModule) processProject(ctx context.Context, projectID string,
 	// Get unprotected LBs
 	unprotectedLBs, err := svc.GetUnprotectedLoadBalancers(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_CLOUDARMOR_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate unprotected load balancers in project %s", projectID))
 	}

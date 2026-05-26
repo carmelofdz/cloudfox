@@ -103,7 +103,7 @@ func (m *BigtableEnumModule) processProject(ctx context.Context, projectID strin
 
 	resources, err := svc.EnumerateSensitiveResources(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BIGTABLEENUM_MODULE_NAME,
 			fmt.Sprintf("Could not scan Bigtable in project %s", projectID))
 		return

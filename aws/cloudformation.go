@@ -80,7 +80,7 @@ func (m *CloudformationModule) PrintCloudformationStacks(outputDirectory string,
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -206,7 +206,7 @@ func (m *CloudformationModule) executeChecks(r string, wg *sync.WaitGroup, semap
 	}
 	for _, serviceRegion := range serviceRegions {
 		if r == serviceRegion {
-			m.CommandCounter.Total++
+			m.CommandCounter.IncrTotal()
 			wg.Add(1)
 			m.createCFStackRowsPerRegion(r, wg, semaphore, dataReceiver)
 		}
@@ -231,7 +231,7 @@ func (m *CloudformationModule) writeLoot(outputDirectory string, verbosity int) 
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	pullFile := filepath.Join(path, "cloudformation-data.txt")
 
@@ -271,7 +271,7 @@ func (m *CloudformationModule) writeLoot(outputDirectory string, verbosity int) 
 	err = os.WriteFile(pullFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -288,8 +288,8 @@ func (m *CloudformationModule) writeLoot(outputDirectory string, verbosity int) 
 
 func (m *CloudformationModule) createCFStackRowsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan CFStack) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -302,7 +302,7 @@ func (m *CloudformationModule) createCFStackRowsPerRegion(r string, wg *sync.Wai
 	DescribeStacks, err := sdk.CachedCloudFormationDescribeStacks(m.CloudFormationClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stack := range DescribeStacks {
@@ -314,7 +314,7 @@ func (m *CloudformationModule) createCFStackRowsPerRegion(r string, wg *sync.Wai
 		stackTemplateBody, err = sdk.CachedCloudFormationGetTemplate(m.CloudFormationClient, aws.ToString(m.Caller.Account), r, stackName)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 		}
 
 		dataReceiver <- CFStack{

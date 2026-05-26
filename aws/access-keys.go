@@ -161,7 +161,7 @@ func (m *AccessKeysModule) getAccessKeysForAllUsers() {
 	ListUsers, err := sdk.CachedIamListUsers(m.IAMClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	// added this to break out if there no users
@@ -171,7 +171,7 @@ func (m *AccessKeysModule) getAccessKeysForAllUsers() {
 			results, err := sdk.CachedIamListAccessKeys(m.IAMClient, aws.ToString(m.Caller.Account), aws.ToString(user.UserName))
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 

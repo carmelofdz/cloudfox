@@ -276,7 +276,7 @@ func (m *IamSimulatorModule) writeLoot(outputDirectory string, verbosity int, pm
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	outFile := filepath.Join(path, "iam-simulator-pmapper-commands.txt")
@@ -292,7 +292,7 @@ func (m *IamSimulatorModule) writeLoot(outputDirectory string, verbosity int, pm
 	err = os.WriteFile(outFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -329,18 +329,18 @@ func (m *IamSimulatorModule) executeChecks(wg *sync.WaitGroup, resource string, 
 func (m *IamSimulatorModule) getIAMUsers(wg *sync.WaitGroup, actions []string, resource string, dataReceiver chan SimulatorResult) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	ListUsers, err := sdk.CachedIamListUsers(m.IAMClient, aws.ToString(m.Caller.Account))
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -369,19 +369,19 @@ func (m *IamSimulatorModule) getIAMUsers(wg *sync.WaitGroup, actions []string, r
 func (m *IamSimulatorModule) getIAMRoles(wg *sync.WaitGroup, actions []string, resource string, dataReceiver chan SimulatorResult) {
 	defer func() {
 		wg.Done()
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	ListRoles, err := sdk.CachedIamListRoles(m.IAMClient, aws.ToString(m.Caller.Account))
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 
 	}
@@ -419,7 +419,7 @@ func (m *IamSimulatorModule) getPolicySimulatorResult(principal *string, actionN
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		m.modLog.Error(fmt.Sprintf("Failed to query actions for %s\n\n", aws.ToString(principal)))
 		return
 	}
@@ -464,7 +464,7 @@ func (m *IamSimulatorModule) isPrincipalAnAdmin(principal *string) bool {
 		)
 		if err != nil {
 			m.modLog.Error(err)
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			m.modLog.Errorf("Failed admin check on %s", aws.ToString(principal))
 			return false
 		}

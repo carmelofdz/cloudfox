@@ -170,7 +170,7 @@ func (m *PubSubModule) processProject(ctx context.Context, projectID string, log
 	// Get topics
 	topicsResult, err := ps.Topics(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_PUBSUB_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Pub/Sub topics in project %s", projectID))
 	} else {
@@ -180,7 +180,7 @@ func (m *PubSubModule) processProject(ctx context.Context, projectID string, log
 	// Get subscriptions
 	subsResult, err := ps.Subscriptions(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_PUBSUB_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate Pub/Sub subscriptions in project %s", projectID))
 	} else {
@@ -866,7 +866,7 @@ func (m *PubSubModule) writeHierarchicalOutput(ctx context.Context, logger inter
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_PUBSUB_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -915,7 +915,7 @@ func (m *PubSubModule) writeFlatOutput(ctx context.Context, logger internal.Logg
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_PUBSUB_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

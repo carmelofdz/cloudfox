@@ -104,7 +104,7 @@ func (m *ResourceTrustsModule) PrintResources(outputDirectory string, verbosity 
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver, includeKms)
 
 	}
@@ -217,7 +217,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getSNSTopicsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -227,7 +227,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getSQSQueuesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -237,7 +237,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getECRRecordsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -247,7 +247,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getCodeBuildResourcePoliciesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -257,7 +257,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getLambdaPolicyPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -267,7 +267,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getEFSfilesystemPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -277,7 +277,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getSecretsManagerSecretsPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -287,7 +287,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getGlueResourcePoliciesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -298,7 +298,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 			m.modLog.Error(err)
 		}
 		if res {
-			m.CommandCounter.Total++
+			m.CommandCounter.IncrTotal()
 			wg.Add(1)
 			m.getKMSPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 		}
@@ -310,7 +310,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 			m.modLog.Error(err)
 		}
 		if res {
-			m.CommandCounter.Total++
+			m.CommandCounter.IncrTotal()
 			wg.Add(1)
 			m.getAPIGatewayPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 		}
@@ -322,7 +322,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 			m.modLog.Error(err)
 		}
 		if res {
-			m.CommandCounter.Total++
+			m.CommandCounter.IncrTotal()
 			wg.Add(1)
 			m.getVPCEndpointPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 		}
@@ -334,7 +334,7 @@ func (m *ResourceTrustsModule) executeChecks(r string, wg *sync.WaitGroup, semap
 			m.modLog.Error(err)
 		}
 		if res {
-			m.CommandCounter.Total++
+			m.CommandCounter.IncrTotal()
 			wg.Add(1)
 			m.getOpenSearchPoliciesPerRegion(r, wg, semaphore, dataReceiver)
 		}
@@ -356,8 +356,8 @@ func (m *ResourceTrustsModule) Receiver(receiver chan Resource2, receiverDone ch
 
 func (m *ResourceTrustsModule) getSNSTopicsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -378,7 +378,7 @@ func (m *ResourceTrustsModule) getSNSTopicsPerRegion(r string, wg *sync.WaitGrou
 		topic, err := cloudFoxSNSClient.getTopicWithAttributes(aws.ToString(t.TopicArn), r)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 		parsedArn, err := arn.Parse(aws.ToString(t.TopicArn))
@@ -433,8 +433,8 @@ func (m *ResourceTrustsModule) getSNSTopicsPerRegion(r string, wg *sync.WaitGrou
 
 func (m *ResourceTrustsModule) getS3Buckets(wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -516,8 +516,8 @@ func (m *ResourceTrustsModule) getS3Buckets(wg *sync.WaitGroup, semaphore chan s
 
 func (m *ResourceTrustsModule) getSQSQueuesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -539,7 +539,7 @@ func (m *ResourceTrustsModule) getSQSQueuesPerRegion(r string, wg *sync.WaitGrou
 		queue, err := cloudFoxSQSClient.getQueueWithAttributes(q, r)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -578,8 +578,8 @@ func (m *ResourceTrustsModule) getSQSQueuesPerRegion(r string, wg *sync.WaitGrou
 
 func (m *ResourceTrustsModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -601,7 +601,7 @@ func (m *ResourceTrustsModule) getECRRecordsPerRegion(r string, wg *sync.WaitGro
 		repoPolicy, err := cloudFoxECRClient.getECRRepositoryPolicy(r, aws.ToString(repo.RepositoryName))
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -642,8 +642,8 @@ func (m *ResourceTrustsModule) getECRRecordsPerRegion(r string, wg *sync.WaitGro
 
 func (m *ResourceTrustsModule) getCodeBuildResourcePoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -666,7 +666,7 @@ func (m *ResourceTrustsModule) getCodeBuildResourcePoliciesPerRegion(r string, w
 		project, err := sdk.CachedCodeBuildBatchGetProjects(cloudFoxCodeBuildClient.CodeBuildClient, aws.ToString(cloudFoxCodeBuildClient.Caller.Account), r, p)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -716,8 +716,8 @@ func (m *ResourceTrustsModule) getCodeBuildResourcePoliciesPerRegion(r string, w
 
 func (m *ResourceTrustsModule) getLambdaPolicyPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -739,7 +739,7 @@ func (m *ResourceTrustsModule) getLambdaPolicyPerRegion(r string, wg *sync.WaitG
 		functionPolicy, err := cloudFoxLambdaClient.getResourcePolicy(r, aws.ToString(f.FunctionName))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -781,8 +781,8 @@ func (m *ResourceTrustsModule) getLambdaPolicyPerRegion(r string, wg *sync.WaitG
 
 func (m *ResourceTrustsModule) getEFSfilesystemPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -804,7 +804,7 @@ func (m *ResourceTrustsModule) getEFSfilesystemPoliciesPerRegion(r string, wg *s
 		fsPolicy, err := sdk.CachedDescribeFileSystemPolicy(cloudFoxEFSClient.EFSClient, aws.ToString(fs.FileSystemId), r, aws.ToString(m.Caller.Account))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -851,8 +851,8 @@ func (m *ResourceTrustsModule) getEFSfilesystemPoliciesPerRegion(r string, wg *s
 // It takes the region to search in, the WaitGroup to use, the semaphore to use, and the dataReceiver channel to send results to.
 func (m *ResourceTrustsModule) getSecretsManagerSecretsPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -874,7 +874,7 @@ func (m *ResourceTrustsModule) getSecretsManagerSecretsPoliciesPerRegion(r strin
 		secretPolicy, err := sdk.CachedSecretsManagerGetResourcePolicy(cloudFoxSecretsManagerClient, aws.ToString(s.ARN), r, aws.ToString(m.Caller.Account))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -921,8 +921,8 @@ func (m *ResourceTrustsModule) getSecretsManagerSecretsPoliciesPerRegion(r strin
 // It takes the region to search in, the WaitGroup to use, the semaphore to use, and the dataReceiver channel to send results to.
 func (m *ResourceTrustsModule) getKMSPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 	}()
 	semaphore <- struct{}{}
@@ -942,7 +942,7 @@ func (m *ResourceTrustsModule) getKMSPoliciesPerRegion(r string, wg *sync.WaitGr
 		keyPolicy, err := sdk.CachedKMSGetKeyPolicy(*m.KMSClient, aws.ToString(m.Caller.Account), r, aws.ToString(key.KeyId))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -985,8 +985,8 @@ func (m *ResourceTrustsModule) getKMSPoliciesPerRegion(r string, wg *sync.WaitGr
 
 func (m *ResourceTrustsModule) getAPIGatewayPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 	}()
 	semaphore <- struct{}{}
@@ -1016,7 +1016,7 @@ func (m *ResourceTrustsModule) getAPIGatewayPoliciesPerRegion(r string, wg *sync
 			restAPIPolicy, err := policy.ParseJSONPolicy([]byte(policyJson))
 			if err != nil {
 				sharedLogger.Error(fmt.Errorf("parsing policy (%s) as JSON: %s", aws.ToString(restAPI.Name), err))
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				continue
 			}
 
@@ -1063,8 +1063,8 @@ func (m *ResourceTrustsModule) getAPIGatewayPoliciesPerRegion(r string, wg *sync
 
 func (m *ResourceTrustsModule) getVPCEndpointPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 	}()
 	semaphore <- struct{}{}
@@ -1086,7 +1086,7 @@ func (m *ResourceTrustsModule) getVPCEndpointPoliciesPerRegion(r string, wg *syn
 			vpcEndpointPolicy, err := policy.ParseJSONPolicy([]byte(vpcEndpointPolicyJson))
 			if err != nil {
 				sharedLogger.Error(fmt.Errorf("parsing policy (%s) as JSON: %s", aws.ToString(vpcEndpoint.VpcEndpointId), err))
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				continue
 			}
 
@@ -1133,8 +1133,8 @@ func (m *ResourceTrustsModule) getVPCEndpointPoliciesPerRegion(r string, wg *syn
 
 func (m *ResourceTrustsModule) getOpenSearchPoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 	}()
 	semaphore <- struct{}{}
@@ -1153,7 +1153,7 @@ func (m *ResourceTrustsModule) getOpenSearchPoliciesPerRegion(r string, wg *sync
 		openSearchDomainConfig, err := sdk.CachedOpenSearchDescribeDomainConfig(*m.OpenSearchClient, aws.ToString(m.Caller.Account), r, aws.ToString(openSearchDomain.DomainName))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -1167,7 +1167,7 @@ func (m *ResourceTrustsModule) getOpenSearchPoliciesPerRegion(r string, wg *sync
 		openSearchDomainStatus, err := sdk.CachedOpenSearchDescribeDomain(*m.OpenSearchClient, aws.ToString(m.Caller.Account), r, aws.ToString(openSearchDomain.DomainName))
 		if err != nil {
 			sharedLogger.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -1179,7 +1179,7 @@ func (m *ResourceTrustsModule) getOpenSearchPoliciesPerRegion(r string, wg *sync
 			openSearchDomainPolicy, err := policy.ParseJSONPolicy([]byte(policyJson))
 			if err != nil {
 				sharedLogger.Error(fmt.Errorf("parsing policy (%s) as JSON: %s", aws.ToString(openSearchDomainStatus.ARN), err))
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				continue
 			}
 
@@ -1226,8 +1226,8 @@ func (m *ResourceTrustsModule) getOpenSearchPoliciesPerRegion(r string, wg *sync
 
 func (m *ResourceTrustsModule) getGlueResourcePoliciesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Resource2) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()

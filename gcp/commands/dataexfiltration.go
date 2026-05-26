@@ -703,7 +703,7 @@ func (m *DataExfiltrationModule) processProject(ctx context.Context, projectID s
 func (m *DataExfiltrationModule) findPublicSnapshots(ctx context.Context, projectID string, logger internal.Logger) {
 	computeService, err := compute.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_DATAEXFILTRATION_MODULE_NAME,
 			fmt.Sprintf("Could not create Compute service in project %s", projectID))
 		return
@@ -848,7 +848,7 @@ func (m *DataExfiltrationModule) findPublicImages(ctx context.Context, projectID
 func (m *DataExfiltrationModule) findPublicBuckets(ctx context.Context, projectID string, logger internal.Logger) {
 	storageService, err := storage.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_DATAEXFILTRATION_MODULE_NAME,
 			fmt.Sprintf("Could not create Storage service in project %s", projectID))
 		return
@@ -1705,6 +1705,6 @@ func (m *DataExfiltrationModule) writeFlatOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_DATAEXFILTRATION_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

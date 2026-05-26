@@ -171,7 +171,7 @@ func (m *OutboundAssumedRolesModule) PrintOutboundRoleTrusts(days int, outputDir
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -308,10 +308,10 @@ func (m *OutboundAssumedRolesModule) executeChecks(r string, wg *sync.WaitGroup,
 	}
 	if res {
 		// wg.Add(1)
-		// m.CommandCounter.Total++
+		// m.CommandCounter.IncrTotal()
 		// m.getAssumeRoleLogEntriesPerRegion(r, wg, semaphore, dataReceiver)
 		wg.Add(1)
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		m.getCrossAccountBatchGetImageEntriesPerRegion(r, wg, semaphore, dataReceiver)
 	}
 
@@ -319,8 +319,8 @@ func (m *OutboundAssumedRolesModule) executeChecks(r string, wg *sync.WaitGroup,
 
 func (m *OutboundAssumedRolesModule) getAssumeRoleLogEntriesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan OutboundAssumeRoleEntry) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -358,7 +358,7 @@ func (m *OutboundAssumedRolesModule) getAssumeRoleLogEntriesPerRegion(r string, 
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -412,8 +412,8 @@ func (m *OutboundAssumedRolesModule) getAssumeRoleLogEntriesPerRegion(r string, 
 // get cross account batch get image entries
 func (m *OutboundAssumedRolesModule) getCrossAccountBatchGetImageEntriesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan OutboundAssumeRoleEntry) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -451,7 +451,7 @@ func (m *OutboundAssumedRolesModule) getCrossAccountBatchGetImageEntriesPerRegio
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 

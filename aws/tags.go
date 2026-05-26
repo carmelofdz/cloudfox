@@ -88,7 +88,7 @@ func (m *TagsModule) PrintTags(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -246,7 +246,7 @@ func (m *TagsModule) countUniqueResourcesWithTags() int {
 func (m *TagsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Tag) {
 	defer wg.Done()
 
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	m.getTagsPerRegion(r, wg, semaphore, dataReceiver)
 }
@@ -266,8 +266,8 @@ func (m *TagsModule) Receiver(receiver chan Tag, receiverDone chan bool) {
 
 func (m *TagsModule) getTagsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Tag) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -280,7 +280,7 @@ func (m *TagsModule) getTagsPerRegion(r string, wg *sync.WaitGroup, semaphore ch
 	resources, err := m.getResources(r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	//var parsedArn types.Arn
 	for _, resource := range resources {
@@ -337,7 +337,7 @@ func (m *TagsModule) getResources(r string) ([]types.ResourceTagMapping, error) 
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				return resources, err
 			}
 

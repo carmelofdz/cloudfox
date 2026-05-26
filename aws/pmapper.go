@@ -446,7 +446,7 @@ func (m *PmapperModule) writeLoot(outputDirectory string, verbosity int) string 
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 	lootFilePath := filepath.Join(path, "pmapper.txt")

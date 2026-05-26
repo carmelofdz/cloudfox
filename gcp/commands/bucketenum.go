@@ -214,7 +214,7 @@ func (m *BucketEnumModule) processProject(ctx context.Context, projectID string,
 	// Get list of buckets
 	buckets, err := svc.GetBucketsList(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_STORAGEENUM_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate buckets in project %s", projectID))
 		return
@@ -230,7 +230,7 @@ func (m *BucketEnumModule) processProject(ctx context.Context, projectID string,
 		for _, bucketName := range buckets {
 			objects, err := svc.EnumerateAllBucketObjects(bucketName, projectID, m.MaxObjects)
 			if err != nil {
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				gcpinternal.HandleGCPError(err, logger, globals.GCP_STORAGEENUM_MODULE_NAME,
 					fmt.Sprintf("Could not enumerate bucket %s in project %s", bucketName, projectID))
 				continue
@@ -263,7 +263,7 @@ func (m *BucketEnumModule) processProject(ctx context.Context, projectID string,
 		for _, bucketName := range buckets {
 			files, err := svc.EnumerateBucketSensitiveFiles(bucketName, projectID, m.MaxObjects)
 			if err != nil {
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				gcpinternal.HandleGCPError(err, logger, globals.GCP_STORAGEENUM_MODULE_NAME,
 					fmt.Sprintf("Could not scan bucket %s in project %s", bucketName, projectID))
 				continue

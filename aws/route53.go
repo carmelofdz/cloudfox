@@ -146,7 +146,7 @@ func (m *Route53Module) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 	route53ARecordsPublicZonesFileName := filepath.Join(path, "route53-A-records-public-Zones.txt")
@@ -168,7 +168,7 @@ func (m *Route53Module) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(route53ARecordsPublicZonesFileName, []byte(route53APublicRecords), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 
@@ -186,7 +186,7 @@ func (m *Route53Module) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(route53ARecordsPrivateZonesFileName, []byte(route53APrivateRecords), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 
@@ -212,7 +212,7 @@ func (m *Route53Module) getRoute53Records() {
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -228,7 +228,7 @@ func (m *Route53Module) getRoute53Records() {
 
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		for _, record := range Records {

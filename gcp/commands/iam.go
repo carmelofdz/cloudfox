@@ -171,7 +171,7 @@ func (m *IAMModule) Execute(ctx context.Context, logger internal.Logger) {
 	iamService := IAMService.New()
 	iamData, err := iamService.CombinedIAMEnhanced(ctx, m.ProjectIDs, m.ProjectNames)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_IAM_MODULE_NAME, "Failed to enumerate IAM")
 		return
 	}
@@ -964,7 +964,7 @@ func (m *IAMModule) writeHierarchicalOutput(ctx context.Context, logger internal
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_IAM_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1041,7 +1041,7 @@ func (m *IAMModule) writeHierarchicalOutputTee(ctx context.Context, logger inter
 	err := internal.HandleHierarchicalOutputTee(config)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing tee streaming output: %v", err), globals.GCP_IAM_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1330,6 +1330,6 @@ func (m *IAMModule) writeFlatOutput(ctx context.Context, logger internal.Logger)
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_IAM_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

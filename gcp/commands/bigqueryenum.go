@@ -128,7 +128,7 @@ func (m *BigQueryEnumModule) processProject(ctx context.Context, projectID strin
 
 	resources, err := svc.EnumerateSensitiveResources(projectID, m.MaxTables, m.SampleData, m.MaxRows)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BIGQUERYENUM_MODULE_NAME,
 			fmt.Sprintf("Could not scan BigQuery in project %s", projectID))
 		return

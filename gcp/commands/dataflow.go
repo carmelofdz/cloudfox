@@ -103,7 +103,7 @@ func (m *DataflowModule) processProject(ctx context.Context, projectID string, l
 	svc := dataflowservice.New()
 	jobs, err := svc.ListJobs(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_DATAFLOW_MODULE_NAME,
 			fmt.Sprintf("Could not list Dataflow jobs in project %s", projectID))
 		return

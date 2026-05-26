@@ -144,7 +144,7 @@ func (m *DomainWideDelegationModule) processProject(ctx context.Context, project
 	svc := domainwidedelegationservice.New()
 	accounts, err := svc.GetDWDServiceAccounts(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_DOMAINWIDEDELEGATION_MODULE_NAME,
 			fmt.Sprintf("Could not check DWD service accounts in project %s", projectID))
 		return
@@ -753,6 +753,6 @@ func (m *DomainWideDelegationModule) writeFlatOutput(ctx context.Context, logger
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_DOMAINWIDEDELEGATION_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

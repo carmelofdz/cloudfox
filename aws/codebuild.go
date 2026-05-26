@@ -87,7 +87,7 @@ func (m *CodeBuildModule) PrintCodeBuildProjects(outputDirectory string, verbosi
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -224,7 +224,7 @@ func (m *CodeBuildModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getcodeBuildProjectsPerRegion(r, wg, semaphore, dataReceiver)
 	}

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -460,22 +461,39 @@ func BuildAWSPath(Caller sts.GetCallerIdentityOutput) string {
 // this is all for the spinner and command counter
 const clearln = "\r\x1b[2K"
 
+// CommandCounter tracks per-module task progress. All fields are accessed
+// atomically through the Incr/Decr/Load methods so worker goroutines and the
+// spinner goroutine can update and read counts safely.
 type CommandCounter struct {
-	Total     int
-	Pending   int
-	Complete  int
-	Error     int
-	Executing int
+	Total     int64
+	Pending   int64
+	Complete  int64
+	Error     int64
+	Executing int64
 }
+
+func (c *CommandCounter) IncrTotal()     { atomic.AddInt64(&c.Total, 1) }
+func (c *CommandCounter) IncrPending()   { atomic.AddInt64(&c.Pending, 1) }
+func (c *CommandCounter) IncrComplete()  { atomic.AddInt64(&c.Complete, 1) }
+func (c *CommandCounter) IncrError()     { atomic.AddInt64(&c.Error, 1) }
+func (c *CommandCounter) IncrExecuting() { atomic.AddInt64(&c.Executing, 1) }
+
+func (c *CommandCounter) DecrPending()   { atomic.AddInt64(&c.Pending, -1) }
+func (c *CommandCounter) DecrExecuting() { atomic.AddInt64(&c.Executing, -1) }
+
+func (c *CommandCounter) LoadTotal() int64    { return atomic.LoadInt64(&c.Total) }
+func (c *CommandCounter) LoadComplete() int64 { return atomic.LoadInt64(&c.Complete) }
+func (c *CommandCounter) LoadError() int64    { return atomic.LoadInt64(&c.Error) }
 
 func SpinUntil(callingModuleName string, counter *CommandCounter, done chan bool, spinType string) {
 	defer close(done)
 	for {
 		select {
 		case <-time.After(1 * time.Second):
-			fmt.Printf(clearln+"[%s] Status: %d/%d %s complete (%d errors -- For details check %s)", cyan(callingModuleName), counter.Complete, counter.Total, spinType, counter.Error, fmt.Sprintf("%s/cloudfox-error.log", ptr.ToString(GetLogDirPath())))
+			fmt.Printf(clearln+"[%s] Status: %d/%d %s complete (%d errors -- For details check %s)", cyan(callingModuleName), counter.LoadComplete(), counter.LoadTotal(), spinType, counter.LoadError(), fmt.Sprintf("%s/cloudfox-error.log", ptr.ToString(GetLogDirPath())))
 		case <-done:
-			fmt.Printf(clearln+"[%s] Status: %d/%d %s complete (%d errors -- For details check %s)\n", cyan(callingModuleName), counter.Complete, counter.Complete, spinType, counter.Error, fmt.Sprintf("%s/cloudfox-error.log", ptr.ToString(GetLogDirPath())))
+			complete := counter.LoadComplete()
+			fmt.Printf(clearln+"[%s] Status: %d/%d %s complete (%d errors -- For details check %s)\n", cyan(callingModuleName), complete, complete, spinType, counter.LoadError(), fmt.Sprintf("%s/cloudfox-error.log", ptr.ToString(GetLogDirPath())))
 			done <- true
 			return
 		}

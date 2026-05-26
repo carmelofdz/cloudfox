@@ -79,7 +79,7 @@ func (m *RAMModule) PrintRAM(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, dataReceiver)
 
 	}
@@ -191,12 +191,12 @@ func (m *RAMModule) executeChecks(r string, wg *sync.WaitGroup, dataReceiver cha
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
-		m.CommandCounter.Pending--
-		m.CommandCounter.Executing++
+		m.CommandCounter.IncrTotal()
+		m.CommandCounter.DecrPending()
+		m.CommandCounter.IncrExecuting()
 		m.getRAMResourcesPerRegion(r, dataReceiver)
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 	}
 }
 
@@ -235,7 +235,7 @@ func (m *RAMModule) getRAMResourcesPerRegion(r string, dataReceiver chan Resourc
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 
@@ -259,7 +259,7 @@ func (m *RAMModule) getRAMResourcesPerRegion(r string, dataReceiver chan Resourc
 					)
 					if err != nil {
 						m.modLog.Error(err.Error())
-						m.CommandCounter.Error++
+						m.CommandCounter.IncrError()
 						break
 					}
 

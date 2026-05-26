@@ -273,7 +273,7 @@ func (m *MonitoringAlertsModule) enumerateAlertPolicies(ctx context.Context, pro
 			break
 		}
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, GCP_MONITORINGALERTS_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate alert policies in project %s", projectID))
 			break
@@ -347,7 +347,7 @@ func (m *MonitoringAlertsModule) enumerateNotificationChannels(ctx context.Conte
 			break
 		}
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, GCP_MONITORINGALERTS_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate notification channels in project %s", projectID))
 			break
@@ -399,7 +399,7 @@ func (m *MonitoringAlertsModule) enumerateUptimeChecks(ctx context.Context, proj
 			break
 		}
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, GCP_MONITORINGALERTS_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate uptime checks in project %s", projectID))
 			break
@@ -896,7 +896,7 @@ func (m *MonitoringAlertsModule) writeFlatOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_MONITORINGALERTS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

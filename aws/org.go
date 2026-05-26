@@ -191,7 +191,7 @@ func (m *OrgModule) ProcessMultipleAccounts(AWSProfiles []string, version string
 
 	for _, profile := range AWSProfiles {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.FindMgmtAccounts(profile, version, wg, semaphore, dataReceiver)
 
 		wg.Wait()
@@ -244,7 +244,7 @@ func (m *OrgModule) FindMgmtAccounts(profile string, version string, wg *sync.Wa
 	DescribeOrganization, err := sdk.CachedOrganizationsDescribeOrganization(m.OrganizationsClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Errorf("Failed to describe organization: %s", err)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -273,7 +273,7 @@ func (m *OrgModule) addOrgAccounts() {
 	accounts, err := sdk.CachedOrganizationsListAccounts(m.OrganizationsClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, account := range accounts {
@@ -292,7 +292,7 @@ func (m *OrgModule) addOrgAccount() {
 	DescribeOrganization, err := sdk.CachedOrganizationsDescribeOrganization(m.OrganizationsClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		sharedLogger.Errorf("Failed to describe organization: %s", err)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	m.Accounts = append(m.Accounts, Account{

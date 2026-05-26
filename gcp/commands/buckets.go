@@ -155,7 +155,7 @@ func (m *BucketsModule) processProject(ctx context.Context, projectID string, lo
 	cs := CloudStorageService.New()
 	buckets, err := cs.Buckets(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_STORAGE_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate buckets in project %s", projectID))
 		return
@@ -305,7 +305,7 @@ func (m *BucketsModule) writeHierarchicalOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_STORAGE_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -357,7 +357,7 @@ func (m *BucketsModule) writeFlatOutput(ctx context.Context, logger internal.Log
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_STORAGE_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

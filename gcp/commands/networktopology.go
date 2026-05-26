@@ -347,7 +347,7 @@ func (m *NetworkTopologyModule) enumerateNetworks(ctx context.Context, projectID
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_NETWORKTOPOLOGY_MODULE_NAME,
 			fmt.Sprintf("Could not list networks in project %s", projectID))
 	}
@@ -400,7 +400,7 @@ func (m *NetworkTopologyModule) enumerateSubnets(ctx context.Context, projectID 
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_NETWORKTOPOLOGY_MODULE_NAME,
 			fmt.Sprintf("Could not list subnets in project %s", projectID))
 	}
@@ -474,7 +474,7 @@ func (m *NetworkTopologyModule) enumerateRoutes(ctx context.Context, projectID s
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_NETWORKTOPOLOGY_MODULE_NAME,
 			fmt.Sprintf("Could not list routes in project %s", projectID))
 	}
@@ -524,7 +524,7 @@ func (m *NetworkTopologyModule) enumerateCloudNAT(ctx context.Context, projectID
 	})
 
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, GCP_NETWORKTOPOLOGY_MODULE_NAME,
 			fmt.Sprintf("Could not list Cloud NAT in project %s", projectID))
 	}
@@ -561,7 +561,7 @@ func (m *NetworkTopologyModule) checkSharedVPCHost(ctx context.Context, projectI
 			return nil
 		})
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, GCP_NETWORKTOPOLOGY_MODULE_NAME,
 				fmt.Sprintf("Could not list XPN resources in project %s", projectID))
 		}
@@ -1751,6 +1751,6 @@ func (m *NetworkTopologyModule) writeFlatOutput(ctx context.Context, logger inte
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_NETWORKTOPOLOGY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

@@ -109,7 +109,7 @@ func (m *OrgPoliciesModule) processProject(ctx context.Context, projectID string
 	svc := orgpolicyservice.New()
 	policies, err := svc.ListProjectPolicies(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_ORGPOLICIES_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate org policies in project %s", projectID))
 		return

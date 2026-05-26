@@ -280,7 +280,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLambdaFunctionsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -289,7 +289,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getEksClustersPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -298,7 +298,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getMqBrokersPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -307,7 +307,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getOpenSearchPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -316,7 +316,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getGrafanaEndPointsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -325,11 +325,11 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getELBv2ListenersPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getELBListenersPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -338,19 +338,19 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayAPIsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayVIPsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayv2APIsPerRegion(r, wg, semaphore, dataReceiver)
 
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getAPIGatewayv2VIPsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -359,7 +359,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getRdsClustersPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -368,13 +368,13 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getRedshiftEndPointsPerRegion(r, wg, semaphore, dataReceiver)
 	}
 
 	//apprunner is not supported by the aws json so we have to call it in every region
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	go m.getAppRunnerEndpointsPerRegion(r, wg, semaphore, dataReceiver)
 
@@ -383,7 +383,7 @@ func (m *EndpointsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLightsailContainerEndpointsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -394,7 +394,7 @@ func (m *EndpointsModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 	f := filepath.Join(path, "endpoints-UrlsOnly.txt")
@@ -408,7 +408,7 @@ func (m *EndpointsModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(f, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		panic(err.Error())
 	}
 
@@ -425,8 +425,8 @@ func (m *EndpointsModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *EndpointsModule) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -434,16 +434,16 @@ func (m *EndpointsModule) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGro
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var public string
 
 	Functions, err := sdk.CachedLambdaListFunctions(m.LambdaClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -455,7 +455,7 @@ func (m *EndpointsModule) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGro
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 		endpoint := aws.ToString(FunctionDetails.FunctionUrl)
@@ -482,8 +482,8 @@ func (m *EndpointsModule) getLambdaFunctionsPerRegion(r string, wg *sync.WaitGro
 
 func (m *EndpointsModule) getEksClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -491,15 +491,15 @@ func (m *EndpointsModule) getEksClustersPerRegion(r string, wg *sync.WaitGroup, 
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Clusters, err := sdk.CachedEKSListClusters(m.EKSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -511,7 +511,7 @@ func (m *EndpointsModule) getEksClustersPerRegion(r string, wg *sync.WaitGroup, 
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 		var endpoint string
@@ -545,8 +545,8 @@ func (m *EndpointsModule) getEksClustersPerRegion(r string, wg *sync.WaitGroup, 
 
 func (m *EndpointsModule) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -554,14 +554,14 @@ func (m *EndpointsModule) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, se
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	BrokerSummaries, err := sdk.CachedMQListBrokers(m.MQClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -584,7 +584,7 @@ func (m *EndpointsModule) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, se
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 		if aws.ToBool(BrokerDetails.PubliclyAccessible) {
@@ -611,8 +611,8 @@ func (m *EndpointsModule) getMqBrokersPerRegion(r string, wg *sync.WaitGroup, se
 
 func (m *EndpointsModule) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -620,14 +620,14 @@ func (m *EndpointsModule) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, s
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	DomainNames, err := sdk.CachedOpenSearchListDomainNames(m.OpenSearchClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -641,7 +641,7 @@ func (m *EndpointsModule) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, s
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 
@@ -663,7 +663,7 @@ func (m *EndpointsModule) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, s
 		domainConfig, err := sdk.CachedOpenSearchDescribeDomainConfig(m.OpenSearchClient, aws.ToString(m.Caller.Account), r, name)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			return
 		}
 		if aws.ToBool(domainConfig.AdvancedSecurityOptions.Options.Enabled) {
@@ -697,8 +697,8 @@ func (m *EndpointsModule) getOpenSearchPerRegion(r string, wg *sync.WaitGroup, s
 
 func (m *EndpointsModule) getGrafanaEndPointsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -706,14 +706,14 @@ func (m *EndpointsModule) getGrafanaEndPointsPerRegion(r string, wg *sync.WaitGr
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	ListWorkspaces, err := sdk.CachedGrafanaListWorkspaces(m.GrafanaClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -743,8 +743,8 @@ func (m *EndpointsModule) getGrafanaEndPointsPerRegion(r string, wg *sync.WaitGr
 
 func (m *EndpointsModule) getELBv2ListenersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -752,16 +752,16 @@ func (m *EndpointsModule) getELBv2ListenersPerRegion(r string, wg *sync.WaitGrou
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	awsService := "ELBv2"
 
 	LoadBalancers, err := sdk.CachedELBv2DescribeLoadBalancers(m.ELBv2Client, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -787,7 +787,7 @@ func (m *EndpointsModule) getELBv2ListenersPerRegion(r string, wg *sync.WaitGrou
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 		if scheme == "internet-facing" {
@@ -823,8 +823,8 @@ func (m *EndpointsModule) getELBv2ListenersPerRegion(r string, wg *sync.WaitGrou
 
 func (m *EndpointsModule) getELBListenersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -832,16 +832,16 @@ func (m *EndpointsModule) getELBListenersPerRegion(r string, wg *sync.WaitGroup,
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "ELB"
 
 	LoadBalancerDescriptions, err := sdk.CachedELBDescribeLoadBalancers(m.ELBClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	var public string
@@ -883,8 +883,8 @@ func (m *EndpointsModule) getELBListenersPerRegion(r string, wg *sync.WaitGroup,
 
 func (m *EndpointsModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -892,16 +892,16 @@ func (m *EndpointsModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGrou
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedApiGatewayGetRestAPIs(m.APIGatewayClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -914,8 +914,8 @@ func (m *EndpointsModule) getAPIGatewayAPIsPerRegion(r string, wg *sync.WaitGrou
 
 func (m *EndpointsModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -923,15 +923,15 @@ func (m *EndpointsModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGrou
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	Items, err := sdk.CachedApiGatewayGetRestAPIs(m.APIGatewayClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -942,7 +942,7 @@ func (m *EndpointsModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGrou
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, item := range GetDomainNames {
@@ -955,7 +955,7 @@ func (m *EndpointsModule) getAPIGatewayVIPsPerRegion(r string, wg *sync.WaitGrou
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1020,7 +1020,7 @@ func (m *EndpointsModule) getEndpointsPerAPIGateway(r string, api apigatewayType
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	GetResources, err := sdk.CachedApiGatewayGetResources(m.APIGatewayClient, aws.ToString(m.Caller.Account), r, id)
@@ -1030,7 +1030,7 @@ func (m *EndpointsModule) getEndpointsPerAPIGateway(r string, api apigatewayType
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range GetStages.Item {
@@ -1059,8 +1059,8 @@ func (m *EndpointsModule) getEndpointsPerAPIGateway(r string, api apigatewayType
 
 func (m *EndpointsModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1068,16 +1068,16 @@ func (m *EndpointsModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGr
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 
 	Items, err := sdk.CachedAPIGatewayv2GetAPIs(m.APIGatewayv2Client, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, api := range Items {
@@ -1090,8 +1090,8 @@ func (m *EndpointsModule) getAPIGatewayv2APIsPerRegion(r string, wg *sync.WaitGr
 
 func (m *EndpointsModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1099,15 +1099,15 @@ func (m *EndpointsModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGr
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	Items, err := sdk.CachedAPIGatewayv2GetAPIs(m.APIGatewayv2Client, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1118,7 +1118,7 @@ func (m *EndpointsModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGr
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, item := range GetDomainNames {
@@ -1131,7 +1131,7 @@ func (m *EndpointsModule) getAPIGatewayv2VIPsPerRegion(r string, wg *sync.WaitGr
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1193,7 +1193,7 @@ func (m *EndpointsModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range GetStages {
@@ -1211,7 +1211,7 @@ func (m *EndpointsModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, stage := range stages {
@@ -1246,8 +1246,8 @@ func (m *EndpointsModule) getEndpointsPerAPIGatewayv2(r string, api apigatewayV2
 
 func (m *EndpointsModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1255,9 +1255,9 @@ func (m *EndpointsModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, 
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	DBInstances, err := sdk.CachedRDSDescribeDBInstances(m.RDSClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
@@ -1265,7 +1265,7 @@ func (m *EndpointsModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, 
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1300,8 +1300,8 @@ func (m *EndpointsModule) getRdsClustersPerRegion(r string, wg *sync.WaitGroup, 
 
 func (m *EndpointsModule) getRedshiftEndPointsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1309,9 +1309,9 @@ func (m *EndpointsModule) getRedshiftEndPointsPerRegion(r string, wg *sync.WaitG
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "Redshift"
 	protocol := "https"
 
@@ -1323,7 +1323,7 @@ func (m *EndpointsModule) getRedshiftEndPointsPerRegion(r string, wg *sync.WaitG
 			m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 		}
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -1360,8 +1360,8 @@ UNUSED CODE - PLEASE REVIEW AND DELETE IF IT DOESN'T APPLY
 
 	func (m *EndpointsModule) getS3EndpointsPerRegion(wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 		defer func() {
-			m.CommandCounter.Executing--
-			m.CommandCounter.Complete++
+			m.CommandCounter.DecrExecuting()
+			m.CommandCounter.IncrComplete()
 			wg.Done()
 
 		}()
@@ -1369,9 +1369,9 @@ UNUSED CODE - PLEASE REVIEW AND DELETE IF IT DOESN'T APPLY
 		defer func() {
 			<-semaphore
 		}()
-		// m.CommandCounter.Total++
-		m.CommandCounter.Pending--
-		m.CommandCounter.Executing++
+		// m.CommandCounter.IncrTotal()
+		m.CommandCounter.DecrPending()
+		m.CommandCounter.IncrExecuting()
 
 		// This for loop exits at the end dependeding on whether the output hits its last page (see pagination control block at the end of the loop).
 		ListBuckets, _ := m.S3Client.ListBuckets(
@@ -1434,8 +1434,8 @@ UNUSED CODE - PLEASE REVIEW AND DELETE IF IT DOESN'T APPLY
 */
 func (m *EndpointsModule) getCloudfrontEndpoints(wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1443,9 +1443,9 @@ func (m *EndpointsModule) getCloudfrontEndpoints(wg *sync.WaitGroup, semaphore c
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var PaginationControl *string
 	var awsService = "Cloudfront"
@@ -1466,7 +1466,7 @@ func (m *EndpointsModule) getCloudfrontEndpoints(wg *sync.WaitGroup, semaphore c
 				m.Errors = append(m.Errors, fmt.Sprintf(" Error: Region: %s, Service: %s, Operation: %s", r, oe.Service(), oe.Operation()))
 			}
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		if ListDistributions.DistributionList.Quantity == nil {
@@ -1546,8 +1546,8 @@ func (m *EndpointsModule) getCloudfrontEndpoints(wg *sync.WaitGroup, semaphore c
 
 func (m *EndpointsModule) getAppRunnerEndpointsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1555,15 +1555,15 @@ func (m *EndpointsModule) getAppRunnerEndpointsPerRegion(r string, wg *sync.Wait
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	ServiceSummaryList, err := sdk.CachedAppRunnerListServices(m.AppRunnerClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	for _, service := range ServiceSummaryList {
@@ -1590,7 +1590,7 @@ func (m *EndpointsModule) getAppRunnerEndpointsPerRegion(r string, wg *sync.Wait
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -1614,7 +1614,7 @@ func (m *EndpointsModule) getAppRunnerEndpointsPerRegion(r string, wg *sync.Wait
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 			if DescribeCustomDomains.DNSTarget != nil {
@@ -1667,8 +1667,8 @@ func (m *EndpointsModule) appRunnerDescribeCustomDomain(r string, serviceArn str
 
 func (m *EndpointsModule) getLightsailContainerEndpointsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Endpoint) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -1676,9 +1676,9 @@ func (m *EndpointsModule) getLightsailContainerEndpointsPerRegion(r string, wg *
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	var public = "True"
 	var protocol = "https"
 	var port int32 = 443
@@ -1687,7 +1687,7 @@ func (m *EndpointsModule) getLightsailContainerEndpointsPerRegion(r string, wg *
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	if len(containerServices) > 0 {

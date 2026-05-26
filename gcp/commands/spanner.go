@@ -98,7 +98,7 @@ func (m *SpannerModule) processProject(ctx context.Context, projectID string, lo
 	svc := spannerservice.New()
 	result, err := svc.ListInstancesAndDatabases(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_SPANNER_MODULE_NAME,
 			fmt.Sprintf("Could not list Spanner instances in project %s", projectID))
 		return
@@ -459,6 +459,6 @@ func (m *SpannerModule) writeFlatOutput(ctx context.Context, logger internal.Log
 		"project", m.ProjectIDs, scopeNames, m.Account, output)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_SPANNER_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

@@ -146,7 +146,7 @@ func (m *ArtifactRegistryModule) processProject(ctx context.Context, projectID s
 	ars := ArtifactRegistryService.New(m.client)
 	result, err := ars.RepositoriesAndArtifacts(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_ARTIFACT_RESGISTRY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate artifact registries in project %s", projectID))
 		return
@@ -525,7 +525,7 @@ func (m *ArtifactRegistryModule) writeHierarchicalOutput(ctx context.Context, lo
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_ARTIFACT_RESGISTRY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -583,6 +583,6 @@ func (m *ArtifactRegistryModule) writeFlatOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_ARTIFACT_RESGISTRY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

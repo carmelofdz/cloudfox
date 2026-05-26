@@ -237,7 +237,7 @@ func (m *SecurityCenterModule) processProject(ctx context.Context, projectID str
 			break
 		}
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			parsedErr := gcpinternal.ParseGCPError(err, "securitycenter.googleapis.com")
 			gcpinternal.HandleGCPError(parsedErr, logger, GCP_SECURITYCENTER_MODULE_NAME,
 				fmt.Sprintf("Project %s", projectID))
@@ -544,7 +544,7 @@ func (m *SecurityCenterModule) writeHierarchicalOutput(ctx context.Context, logg
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), GCP_SECURITYCENTER_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -680,6 +680,6 @@ func (m *SecurityCenterModule) writeFlatOutput(ctx context.Context, logger inter
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), GCP_SECURITYCENTER_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

@@ -428,14 +428,14 @@ func (b *BaseGCPModule) RunProjectEnumeration(
 
 	// Process each project with goroutines
 	for _, projectID := range projectIDs {
-		b.CommandCounter.Total++
-		b.CommandCounter.Pending++
+		b.CommandCounter.IncrTotal()
+		b.CommandCounter.IncrPending()
 		wg.Add(1)
 
 		go func(project string) {
 			defer func() {
-				b.CommandCounter.Executing--
-				b.CommandCounter.Complete++
+				b.CommandCounter.DecrExecuting()
+				b.CommandCounter.IncrComplete()
 				wg.Done()
 			}()
 
@@ -443,8 +443,8 @@ func (b *BaseGCPModule) RunProjectEnumeration(
 			semaphore <- struct{}{}
 			defer func() { <-semaphore }()
 
-			b.CommandCounter.Pending--
-			b.CommandCounter.Executing++
+			b.CommandCounter.DecrPending()
+			b.CommandCounter.IncrExecuting()
 
 			// Call the module-specific processor
 			processor(ctx, project, logger)

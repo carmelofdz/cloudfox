@@ -103,7 +103,7 @@ func (m *SpannerEnumModule) processProject(ctx context.Context, projectID string
 
 	resources, err := svc.EnumerateSensitiveResources(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_SPANNERENUM_MODULE_NAME,
 			fmt.Sprintf("Could not scan Spanner in project %s", projectID))
 		return

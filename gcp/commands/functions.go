@@ -148,7 +148,7 @@ func (m *FunctionsModule) processProject(ctx context.Context, projectID string, 
 	fs := FunctionsService.New()
 	functions, err := fs.Functions(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_FUNCTIONS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate functions in project %s", projectID))
 		return
@@ -329,7 +329,7 @@ func (m *FunctionsModule) writeHierarchicalOutput(ctx context.Context, logger in
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_FUNCTIONS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -372,7 +372,7 @@ func (m *FunctionsModule) writeFlatOutput(ctx context.Context, logger internal.L
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_FUNCTIONS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

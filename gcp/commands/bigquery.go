@@ -129,7 +129,7 @@ func (m *BigQueryModule) processProject(ctx context.Context, projectID string, l
 	bqService := BigQueryService.New()
 	result, err := bqService.BigqueryDatasetsAndTables(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_BIGQUERY_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate BigQuery in project %s", projectID))
 		return
@@ -425,7 +425,7 @@ func (m *BigQueryModule) writeHierarchicalOutput(ctx context.Context, logger int
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_BIGQUERY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -479,6 +479,6 @@ func (m *BigQueryModule) writeFlatOutput(ctx context.Context, logger internal.Lo
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_BIGQUERY_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

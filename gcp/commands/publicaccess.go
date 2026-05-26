@@ -1173,7 +1173,7 @@ func (m *PublicAccessModule) writeHierarchicalOutput(ctx context.Context, logger
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_PUBLICACCESS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -1259,7 +1259,7 @@ func (m *PublicAccessModule) writeFlatOutput(ctx context.Context, logger interna
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_PUBLICACCESS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 

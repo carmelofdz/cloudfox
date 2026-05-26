@@ -177,7 +177,7 @@ func (m *DNSModule) processProject(ctx context.Context, projectID string, logger
 	// Get zones
 	zones, err := ds.Zones(projectID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_DNS_MODULE_NAME,
 			fmt.Sprintf("Could not enumerate DNS zones in project %s", projectID))
 		return
@@ -204,7 +204,7 @@ func (m *DNSModule) processProject(ctx context.Context, projectID string, logger
 		// Get records for each zone (outside of lock to avoid holding mutex across API call)
 		records, err := ds.Records(projectID, zone.Name)
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, globals.GCP_DNS_MODULE_NAME,
 				fmt.Sprintf("Could not enumerate DNS records in zone %s", zone.Name))
 			continue
@@ -486,7 +486,7 @@ func (m *DNSModule) writeHierarchicalOutput(ctx context.Context, logger internal
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_DNS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -545,6 +545,6 @@ func (m *DNSModule) writeFlatOutput(ctx context.Context, logger internal.Logger)
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_DNS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

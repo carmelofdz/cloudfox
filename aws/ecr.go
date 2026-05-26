@@ -84,7 +84,7 @@ func (m *ECRModule) PrintECR(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -210,7 +210,7 @@ func (m *ECRModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan s
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getECRRecordsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -234,7 +234,7 @@ func (m *ECRModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	pullFile := filepath.Join(path, "ecr-pull-commands.txt")
 
@@ -259,7 +259,7 @@ func (m *ECRModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(pullFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -277,8 +277,8 @@ func (m *ECRModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *ECRModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Repository) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -290,7 +290,7 @@ func (m *ECRModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 	Repositories, err := sdk.CachedECRDescribeRepositories(m.ECRClient, aws.ToString(m.Caller.Account), r)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -302,7 +302,7 @@ func (m *ECRModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 		images, err := sdk.CachedECRDescribeImages(m.ECRClient, aws.ToString(m.Caller.Account), r, repoName)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			continue
 		}
 
@@ -350,7 +350,7 @@ func (m *ECRModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 // 	var repositories []types.Repository
 // 	Repositories, err := sdk.CachedECRDescribeRepositories(m.ECRClient, aws.ToString(m.Caller.Account), r)
 // 	if err != nil {
-// 		m.CommandCounter.Error++
+// 		m.CommandCounter.IncrError()
 // 		return nil, err
 // 	}
 
@@ -364,7 +364,7 @@ func (m *ECRModule) getECRRecordsPerRegion(r string, wg *sync.WaitGroup, semapho
 
 // 	ImageDetails, err := sdk.CachedECRDescribeImages(m.ECRClient, aws.ToString(m.Caller.Account), r, repoName)
 // 	if err != nil {
-// 		m.CommandCounter.Error++
+// 		m.CommandCounter.IncrError()
 // 		return nil, err
 // 	}
 // 	images = append(images, ImageDetails...)
@@ -375,7 +375,7 @@ func (m *ECRModule) getECRRepositoryPolicy(r string, repository string) (policy.
 	var repoPolicy policy.Policy
 	Policy, err := sdk.CachedECRGetRepositoryPolicy(m.ECRClient, aws.ToString(m.Caller.Account), r, repository)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return repoPolicy, err
 	}
 	repoPolicy, err = policy.ParseJSONPolicy([]byte(Policy))

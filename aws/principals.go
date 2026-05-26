@@ -97,7 +97,7 @@ func (m *IamPrincipalsModule) PrintIamPrincipals(outputDirectory string, verbosi
 	// done := make(chan bool)
 	// go internal.SpinUntil(m.output.CallingModule, &m.CommandCounter, done)
 	// wg.Add(1)
-	// m.CommandCounter.Pending++
+	// m.CommandCounter.IncrPending()
 	//m.executeChecks(wg)
 	// wg.Wait()
 	// done <- true
@@ -237,13 +237,13 @@ func (m *IamPrincipalsModule) PrintIamPrincipals(outputDirectory string, verbosi
 /* UNUSED CODE BLOCK - PLEASE REVIEW AND DELETE IF APPLICABLE
 func (m *IamPrincipalsModule) executeChecks(wg *sync.WaitGroup) {
 	defer wg.Done()
-	m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	m.getIAMUsers()
 	m.getIAMRoles()
-	m.CommandCounter.Executing--
-	m.CommandCounter.Complete++
+	m.CommandCounter.DecrExecuting()
+	m.CommandCounter.IncrComplete()
 }
 */
 
@@ -256,7 +256,7 @@ func (m *IamPrincipalsModule) addIAMUsersToTable() {
 	ListUsers, err := sdk.CachedIamListUsers(m.IAMClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, user := range ListUsers {
@@ -288,7 +288,7 @@ func (m *IamPrincipalsModule) addIAMRolesToTable() {
 	ListRoles, err := sdk.CachedIamListRoles(m.IAMClient, aws.ToString(m.Caller.Account))
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	for _, role := range ListRoles {

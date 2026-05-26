@@ -523,7 +523,7 @@ func (m *KeysModule) writeHierarchicalOutput(ctx context.Context, logger interna
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_KEYS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -569,6 +569,6 @@ func (m *KeysModule) writeFlatOutput(ctx context.Context, logger internal.Logger
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_KEYS_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }

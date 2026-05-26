@@ -113,7 +113,7 @@ func (m *VPCSCModule) Execute(ctx context.Context, logger internal.Logger) {
 	// List access policies
 	policies, err := svc.ListAccessPolicies(m.OrgID)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_VPCSC_MODULE_NAME,
 			fmt.Sprintf("Could not list access policies for organization %s", m.OrgID))
 		return
@@ -433,7 +433,7 @@ func (m *VPCSCModule) writeHierarchicalOutput(ctx context.Context, logger intern
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_VPCSC_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -446,7 +446,7 @@ func (m *VPCSCModule) writeFlatOutput(ctx context.Context, logger internal.Logge
 	err := internal.HandleOutputSmart("gcp", m.Format, m.OutputDirectory, m.Verbosity, m.WrapTable,
 		"org", []string{m.OrgID}, []string{m.OrgID}, m.Account, output)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_VPCSC_MODULE_NAME,
 			"Could not write output")
 	}

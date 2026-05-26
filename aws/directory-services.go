@@ -84,7 +84,7 @@ func (m *DirectoryModule) PrintDirectories(outputDirectory string, verbosity int
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -203,7 +203,7 @@ func (m *DirectoryModule) executeChecks(r string, wg *sync.WaitGroup, semaphore 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		m.getDirectoriesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -223,8 +223,8 @@ func (m *DirectoryModule) Receiver(receiver chan Directory, receiverDone chan bo
 }
 func (m *DirectoryModule) getDirectoriesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Directory) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()

@@ -82,7 +82,7 @@ func (m *SecretsModule) PrintSecrets(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 	}
 
@@ -205,7 +205,7 @@ func (m *SecretsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore ch
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSecretsManagerSecretsPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -214,7 +214,7 @@ func (m *SecretsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore ch
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSSMParametersPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -226,7 +226,7 @@ func (m *SecretsModule) writeLoot(outputDirectory string, verbosity int) {
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 	pullFile := filepath.Join(path, "pull-secrets-commands.txt")
 
@@ -249,7 +249,7 @@ func (m *SecretsModule) writeLoot(outputDirectory string, verbosity int) {
 	err = os.WriteFile(pullFile, []byte(out), 0644)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 
 	if verbosity > 2 {
@@ -266,8 +266,8 @@ func (m *SecretsModule) writeLoot(outputDirectory string, verbosity int) {
 
 func (m *SecretsModule) getSecretsManagerSecretsPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Secret) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -275,9 +275,9 @@ func (m *SecretsModule) getSecretsManagerSecretsPerRegion(r string, wg *sync.Wai
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var PaginationControl *string
 	for {
@@ -292,7 +292,7 @@ func (m *SecretsModule) getSecretsManagerSecretsPerRegion(r string, wg *sync.Wai
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -324,8 +324,8 @@ func (m *SecretsModule) getSecretsManagerSecretsPerRegion(r string, wg *sync.Wai
 
 func (m *SecretsModule) getSSMParametersPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan Secret) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -333,9 +333,9 @@ func (m *SecretsModule) getSSMParametersPerRegion(r string, wg *sync.WaitGroup, 
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	var PaginationControl *string
 
@@ -351,7 +351,7 @@ func (m *SecretsModule) getSSMParametersPerRegion(r string, wg *sync.WaitGroup, 
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 

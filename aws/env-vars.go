@@ -105,7 +105,7 @@ func (m *EnvsModule) PrintEnvs(outputDirectory string, verbosity int) {
 
 	for _, region := range m.AWSRegions {
 		wg.Add(1)
-		m.CommandCounter.Pending++
+		m.CommandCounter.IncrPending()
 		go m.executeChecks(region, wg, semaphore, dataReceiver)
 
 	}
@@ -290,7 +290,7 @@ func (m *EnvsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan 
 	}
 	res, _ := servicemap.IsServiceInRegion("ecs", r)
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getECSEnvironmentVariablesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -300,13 +300,13 @@ func (m *EnvsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLambdaEnvironmentVariablesPerRegion(r, wg, semaphore, dataReceiver)
 	}
 
 	// AppRunner is not supported in the aws service region catalog so we have to run it in all regions
-	m.CommandCounter.Total++
+	m.CommandCounter.IncrTotal()
 	wg.Add(1)
 	go m.getAppRunnerEnvironmentVariablesPerRegion(r, wg, semaphore, dataReceiver)
 
@@ -315,7 +315,7 @@ func (m *EnvsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getLightsailEnvironmentVariablesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -325,7 +325,7 @@ func (m *EnvsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan 
 		m.modLog.Error(err)
 	}
 	if res {
-		m.CommandCounter.Total++
+		m.CommandCounter.IncrTotal()
 		wg.Add(1)
 		go m.getSagemakerEnvironmentVariablesPerRegion(r, wg, semaphore, dataReceiver)
 	}
@@ -334,8 +334,8 @@ func (m *EnvsModule) executeChecks(r string, wg *sync.WaitGroup, semaphore chan 
 
 func (m *EnvsModule) getECSEnvironmentVariablesPerRegion(region string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan EnvironmentVariable) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -343,9 +343,9 @@ func (m *EnvsModule) getECSEnvironmentVariablesPerRegion(region string, wg *sync
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	// "PaginationMarker" is a control variable used for output continuity, as AWS return the output in pages.
 	//var PaginationMarker *string
 
@@ -364,7 +364,7 @@ func (m *EnvsModule) getECSEnvironmentVariablesPerRegion(region string, wg *sync
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 		for _, containerDefinition := range DescribeTaskDefinition.TaskDefinition.ContainerDefinitions {
@@ -390,7 +390,7 @@ func (m *EnvsModule) getTaskDefinitionFamilies(region string) []string {
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -425,8 +425,8 @@ func (m *EnvsModule) getECSEnvironmentVariablesPerDefinition(taskDefinition ecsT
 
 func (m *EnvsModule) getLambdaEnvironmentVariablesPerRegion(region string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan EnvironmentVariable) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -434,14 +434,14 @@ func (m *EnvsModule) getLambdaEnvironmentVariablesPerRegion(region string, wg *s
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	Functions, err := sdk.CachedLambdaListFunctions(m.LambdaClient, aws.ToString(m.Caller.Account), region)
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -467,8 +467,8 @@ func (m *EnvsModule) getLambdaEnvironmentVariablesPerFunction(function lambdaTyp
 
 func (m *EnvsModule) getAppRunnerEnvironmentVariablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan EnvironmentVariable) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -476,16 +476,16 @@ func (m *EnvsModule) getAppRunnerEnvironmentVariablesPerRegion(r string, wg *syn
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 
 	ServiceSummaryList, err := sdk.CachedAppRunnerListServices(m.AppRunnerClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		//modLog.Error(err.Error())
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 	if len(ServiceSummaryList) > 0 {
@@ -506,7 +506,7 @@ func (m *EnvsModule) getAppRunnerEnvironmentVariablesPerRegion(r string, wg *syn
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 
 			}
@@ -530,8 +530,8 @@ func (m *EnvsModule) getAppRunnerEnvironmentVariablesPerRegion(r string, wg *syn
 
 func (m *EnvsModule) getLightsailEnvironmentVariablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan EnvironmentVariable) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -539,16 +539,16 @@ func (m *EnvsModule) getLightsailEnvironmentVariablesPerRegion(r string, wg *syn
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "Lightsail [Container]"
 
 	ContainerServices, err := sdk.CachedLightsailGetContainerServices(m.LightsailClient, aws.ToString(m.Caller.Account), r)
 
 	if err != nil {
 		m.modLog.Error(err.Error())
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		return
 	}
 
@@ -574,8 +574,8 @@ func (m *EnvsModule) getLightsailEnvironmentVariablesPerRegion(r string, wg *syn
 
 func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *sync.WaitGroup, semaphore chan struct{}, dataReceiver chan EnvironmentVariable) {
 	defer func() {
-		m.CommandCounter.Executing--
-		m.CommandCounter.Complete++
+		m.CommandCounter.DecrExecuting()
+		m.CommandCounter.IncrComplete()
 		wg.Done()
 
 	}()
@@ -583,9 +583,9 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 	defer func() {
 		<-semaphore
 	}()
-	// m.CommandCounter.Total++
-	m.CommandCounter.Pending--
-	m.CommandCounter.Executing++
+	// m.CommandCounter.IncrTotal()
+	m.CommandCounter.DecrPending()
+	m.CommandCounter.IncrExecuting()
 	awsService := "Sagemaker"
 
 	var PaginationControl *string
@@ -603,7 +603,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -621,7 +621,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 
@@ -665,7 +665,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -683,7 +683,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 
@@ -726,7 +726,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -744,7 +744,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 
@@ -788,7 +788,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 		)
 		if err != nil {
 			m.modLog.Error(err.Error())
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			break
 		}
 
@@ -805,7 +805,7 @@ func (m *EnvsModule) getSagemakerEnvironmentVariablesPerRegion(r string, wg *syn
 			)
 			if err != nil {
 				m.modLog.Error(err.Error())
-				m.CommandCounter.Error++
+				m.CommandCounter.IncrError()
 				break
 			}
 

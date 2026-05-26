@@ -296,7 +296,7 @@ func (m *WhoAmIModule) getOrganizationContext(ctx context.Context, logger intern
 	// Create resource manager clients
 	crmService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_WHOAMI_MODULE_NAME,
 			"Could not create Cloud Resource Manager client")
 		return
@@ -305,7 +305,7 @@ func (m *WhoAmIModule) getOrganizationContext(ctx context.Context, logger intern
 	// Create v3 client for fetching folder details
 	crmv3Service, err := crmv3.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		gcpinternal.HandleGCPError(err, logger, globals.GCP_WHOAMI_MODULE_NAME,
 			"Could not create Cloud Resource Manager v3 client")
 		// Continue without v3, we just won't get display names for folders
@@ -326,7 +326,7 @@ func (m *WhoAmIModule) getOrganizationContext(ctx context.Context, logger intern
 		// Get ancestry
 		resp, err := crmService.Projects.GetAncestry(projectID, &cloudresourcemanager.GetAncestryRequest{}).Do()
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, globals.GCP_WHOAMI_MODULE_NAME,
 				fmt.Sprintf("Could not get ancestry for project %s", projectID))
 			continue
@@ -437,7 +437,7 @@ func (m *WhoAmIModule) getGroupMemberships(ctx context.Context, logger internal.
 
 	ciService, err := cloudidentity.NewService(ctx)
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		parsedErr := gcpinternal.ParseGCPError(err, "cloudidentity.googleapis.com")
 		gcpinternal.HandleGCPError(parsedErr, logger, globals.GCP_WHOAMI_MODULE_NAME,
 			"Could not create Cloud Identity client")
@@ -451,7 +451,7 @@ func (m *WhoAmIModule) getGroupMemberships(ctx context.Context, logger internal.
 	query := fmt.Sprintf("member_key_id == '%s'", m.Identity.Email)
 	resp, err := ciService.Groups.Memberships.SearchDirectGroups("groups/-").Query(query).Do()
 	if err != nil {
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 		parsedErr := gcpinternal.ParseGCPError(err, "cloudidentity.googleapis.com")
 		gcpinternal.HandleGCPError(parsedErr, logger, globals.GCP_WHOAMI_MODULE_NAME,
 			"Could not fetch group memberships")
@@ -565,7 +565,7 @@ func (m *WhoAmIModule) getRoleBindings(ctx context.Context, logger internal.Logg
 		// Use PrincipalsWithRolesEnhanced which includes inheritance
 		principals, err := iamService.PrincipalsWithRolesEnhanced(projectID)
 		if err != nil {
-			m.CommandCounter.Error++
+			m.CommandCounter.IncrError()
 			gcpinternal.HandleGCPError(err, logger, globals.GCP_WHOAMI_MODULE_NAME,
 				fmt.Sprintf("Could not get IAM bindings for project %s", projectID))
 			continue
@@ -2030,7 +2030,7 @@ func (m *WhoAmIModule) writeHierarchicalOutput(ctx context.Context, logger inter
 	err := internal.HandleHierarchicalOutputSmart("gcp", m.Format, m.Verbosity, m.WrapTable, pathBuilder, outputData)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing hierarchical output: %v", err), globals.GCP_WHOAMI_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
@@ -2058,7 +2058,7 @@ func (m *WhoAmIModule) writeFlatOutput(ctx context.Context, logger internal.Logg
 	)
 	if err != nil {
 		logger.ErrorM(fmt.Sprintf("Error writing output: %v", err), globals.GCP_WHOAMI_MODULE_NAME)
-		m.CommandCounter.Error++
+		m.CommandCounter.IncrError()
 	}
 }
 
